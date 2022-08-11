@@ -2,7 +2,7 @@ import com.google.common.collect.ImmutableMap
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
-import io.ktor.util.toLowerCasePreservingASCIIRules
+import io.ktor.util.*
 import org.openqa.selenium.MutableCapabilities
 import java.net.URL
 import java.time.LocalDateTime
@@ -39,7 +39,10 @@ class TestOptions(
                     }
 
                     // Local Appium requires JSON array (i.e. a string) instead of a list.
-                    caps.setCapability("appium:otherApps", "[\"${otherAppsPaths.joinToString("\", \"")}\"]")
+                    caps.setCapability(
+                        "appium:otherApps",
+                        "[\"${otherAppsPaths.joinToString("\", \"")}\"]"
+                    )
                 }
 
                 Server.SauceLabs -> {
@@ -88,7 +91,10 @@ class TestOptions(
                 )
                 sauceOptions.setCapability(
                     "tags",
-                    listOf(platform.toString().toLowerCasePreservingASCIIRules(), if (isCI) "ci" else "local")
+                    listOf(
+                        platform.toString().toLowerCasePreservingASCIIRules(),
+                        if (isCI) "ci" else "local"
+                    )
                 )
                 caps.setCapability("sauce:options", sauceOptions)
 

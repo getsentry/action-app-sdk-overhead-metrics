@@ -20,7 +20,8 @@ abstract class TestBase(
         @Suppress("unused") // See annotation @SauceLabsOnly
         @JvmStatic
         fun sauceLabsSettingsPresentOrCi(): Boolean {
-            return !System.getenv("CI").isNullOrEmpty() || SauceLabs.user.isNotEmpty() || SauceLabs.key.isNotEmpty()
+            return !System.getenv("CI")
+                .isNullOrEmpty() || SauceLabs.user.isNotEmpty() || SauceLabs.key.isNotEmpty()
         }
     }
 

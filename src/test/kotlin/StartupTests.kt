@@ -1,7 +1,5 @@
 import com.google.common.math.Quantiles
 import com.google.common.math.Stats
-import io.appium.java_client.CommandExecutionHelper
-import io.appium.java_client.MobileCommand
 import io.appium.java_client.android.Activity
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
@@ -12,7 +10,6 @@ import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
 import java.nio.file.Path
-import java.util.*
 import kotlin.io.path.fileSize
 import kotlin.math.abs
 

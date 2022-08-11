@@ -1,16 +1,13 @@
 import com.google.common.hash.Hashing
 import com.jayway.jsonpath.JsonPath
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.auth.Auth
-import io.ktor.client.plugins.auth.providers.BasicAuthCredentials
-import io.ktor.client.plugins.auth.providers.basic
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.forms.submitFormWithBinaryData
-import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import java.util.logging.Logger
 import kotlin.io.path.name
@@ -55,7 +52,10 @@ class SauceLabs {
                             "payload", app.path.readBytes(),
                             Headers.build {
                                 append(HttpHeaders.ContentType, "application/octet-stream")
-                                append(HttpHeaders.ContentDisposition, "filename=\"${app.path.name}\"")
+                                append(
+                                    HttpHeaders.ContentDisposition,
+                                    "filename=\"${app.path.name}\""
+                                )
                             }
                         )
                     }

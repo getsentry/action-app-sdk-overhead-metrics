@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.7.10"
 }
 
-group = "io.sentry.android.tests"
+group = "io.sentry.appium.tests"
 version = "1.0-SNAPSHOT"
 
 repositories {
