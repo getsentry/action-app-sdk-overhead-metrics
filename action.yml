@@ -19,7 +19,7 @@ runs:
         echo Using config file: ${{ inputs.config }}
         cat ${{ inputs.config }}
       shell: bash
-    - run: ./gradlew :test
+    - run: ./gradlew --no-daemon :test
       shell: bash
       env:
         TEST_CONFIG: ${{ inputs.config }}
