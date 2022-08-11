@@ -131,30 +131,21 @@ class StartupTimeTest : TestBase() {
                         // Originally we used a code that loaded a list of executed Appium commands and used the time
                         // that the 'startActivity' command took. It seems like this time includes some overhead of the
                         // Appium controller because the times were about 900 ms, while the time reported in logcat
-                        // was `ActivityManager: Displayed io.sentry.java.tests.perf.appplain/.MainActivity: +276ms`
+                        // was `ActivityManager: Displayed io.../.MainActivity: +276ms` or `... +1s40ms`
                         //   val times = driver.events.commands.filter { it.name == "startActivity" } .map { it.endTimestamp - it.startTimestamp }
                         //   val offset = j * runs
                         //   times.subList(offset, offset + runs)
-
-                        // Note: logcat is sometimes delayed when the SauceLabs is overloaded - retry multiple times until we collect it all.
-                        //       Remember - calling get("logcat") clears the logs.
-                        val appTimesList = mutableListOf<Long>()
-                        for (retry in 1..10) {
-                            val logEntries = driver.manage().logs().get("logcat")
-                            val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+([0-9]+)ms")
-                            appTimesList.addAll(logEntries.mapNotNull {
-                                regex.find(it.message)?.groupValues?.get(1)?.toLong()
-                            })
-                            if (appTimesList.size >= runs) {
-                                break
+                        val logEntries = driver.manage().logs().get("logcat")
+                        val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
+                        logEntries.mapNotNull {
+                            val groups = regex.find(it.message)?.groupValues
+                            if (groups == null) {
+                                null
+                            } else {
+                                val seconds = if (groups[1].isEmpty()) 0 else groups[1].toLong()
+                                seconds * 1000 + groups[2].toLong()
                             }
-                            printf(
-                                "$logAppPrefix launch times collection not complete, got %d while we expected %d. Retrying...",
-                                app.name, appTimesList.size, runs
-                            )
-                            Thread.sleep(1000)
                         }
-                        appTimesList
                     }
 
                     TestOptions.Platform.IOS -> {
