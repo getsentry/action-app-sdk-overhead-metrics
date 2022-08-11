@@ -9,7 +9,7 @@ inputs:
     description: SauceLabs username
     required: true
   sauce-key:
-    description: SauceLabs password
+    description: SauceLabs access key
     required: true
 
 runs:
@@ -19,8 +19,9 @@ runs:
         echo Using config file: ${{ inputs.config }}
         cat ${{ inputs.config }}
       shell: bash
-#    - run: ./gradlew :test
-#      shell: bash
-#      env:
-#        TEST_CONFIG: ${{ inputs.config }}
-
+    - run: ./gradlew :test
+      shell: bash
+      env:
+        TEST_CONFIG: ${{ inputs.config }}
+        SAUCE_USERNAME: ${{ inputs.sauce-user }}
+        SAUCE_ACCESS_KEY: ${{ inputs.sauce-key }}
