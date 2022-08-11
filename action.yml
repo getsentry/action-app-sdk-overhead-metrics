@@ -22,8 +22,9 @@ runs:
 
     - run: ./gradlew --no-daemon :test
       shell: bash
+      working-directory: ${{ github.action_path }}
       env:
-        TEST_CONFIG: ${{ inputs.config }}
+        TEST_CONFIG: ${{ github.workspace }}/${{ inputs.config }}
         SAUCE_USERNAME: ${{ inputs.sauce-user }}
         SAUCE_ACCESS_KEY: ${{ inputs.sauce-key }}
 
