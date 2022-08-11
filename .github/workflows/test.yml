@@ -1,0 +1,14 @@
+# Test the action itself
+on:
+  push:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./
+        with:
+          config: test/test.conf
+          sauce-user: foo
+          sauce-key: bar

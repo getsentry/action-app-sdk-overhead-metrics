@@ -1,0 +1,21 @@
+name: App metrics
+description: Collect and test app metrics
+
+inputs:
+  config:
+    description: Configuration file
+    required: true
+  sauce-user:
+    description: SauceLabs username
+    required: true
+  sauce-key:
+    description: SauceLabs password
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - run: 'echo Using config file: ${{ inputs.config }}'
+      shell: bash
+    # - run: ./gradlew :test
+    #   shell: bash
