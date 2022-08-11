@@ -20,18 +20,22 @@ data class AppInfo(val name: String, val activity: String? = null, val path: Str
     private val pathIsUrl = path.contains(':')
 
     val file: Path by lazy {
-        if (!pathIsUrl) {
-            Path.of(path).toRealPath()
+        if (pathIsUrl) {
+            // If it's a remote file (URL) - use a local cache to avoid repeated downloads.
+            val urlHash = Hashing.crc32().hashString(path, Charset.defaultCharset()).toString()
+            val cacheFile = Path.of(".cache/$urlHash-" + Path.of(path).name)
+            if (cacheFile.notExists()) {
+                cacheFile.parent.createDirectories()
+                URL(path).openStream().use { Files.copy(it, cacheFile) }
+            }
+            cacheFile.toRealPath()
+        } else {
+            var appPath = Path.of(path)
+            if (!appPath.isAbsolute) {
+                appPath = TestOptions.configFile.parent.resolve(appPath)
+            }
+            appPath.toRealPath()
         }
-
-        // If it's a remote file (URL) - use a local cache to avoid repeated downloads.
-        val urlHash = Hashing.crc32().hashString(path, Charset.defaultCharset()).toString()
-        val cacheFile = Path.of(".cache/$urlHash-" + Path.of(path).name)
-        if (cacheFile.notExists()) {
-            cacheFile.parent.createDirectories()
-            URL(path).openStream().use { Files.copy(it, cacheFile) }
-        }
-        cacheFile.toRealPath()
     }
 }
 
@@ -53,8 +57,8 @@ data class TestOptions(
 
     companion object {
         val isCI = System.getenv().containsKey("CI")
-        val instance: TestOptions =
-            ConfigLoader().loadConfigOrThrow(System.getenv()["TEST_CONFIG"] ?: "./tests/android.yml")
+        val configFile = Path.of(System.getenv()["TEST_CONFIG"] ?: "./tests/android.yml")
+        val instance: TestOptions = ConfigLoader().loadConfigOrThrow(configFile.toString())
     }
 
     enum class Platform {
