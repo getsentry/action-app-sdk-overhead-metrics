@@ -2,6 +2,7 @@ import com.google.common.hash.Hashing
 import com.jayway.jsonpath.JsonPath
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
@@ -9,6 +10,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
+import java.nio.file.Path
 import java.util.logging.Logger
 import kotlin.io.path.name
 import kotlin.io.path.readBytes
@@ -23,6 +25,10 @@ class SauceLabs {
         private const val baseUrl = "https://api.$region.saucelabs.com"
         private val client = HttpClient(CIO) {
             expectSuccess = true
+            install(HttpTimeout) {
+                connectTimeoutMillis = 60 * 1000
+                requestTimeoutMillis = 60 * 1000
+            }
             install(Auth) {
                 basic {
                     sendWithoutRequest { true }
@@ -44,7 +50,7 @@ class SauceLabs {
             logger.info("App '${app.name}' - uploading to SauceLabs from ${app.file}")
 
             return runBlocking {
-                val fileName = app.file.name
+                val fileName = Path.of(app.path).name
                 val response = client.submitFormWithBinaryData(
                     url = "$baseUrl/v1/storage/upload",
                     formData = formData {
