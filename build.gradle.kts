@@ -12,6 +12,7 @@ repositories {
 }
 
 val ktorVersion = "2.0.3"
+val hopliteVersion = "2.5.2"
 dependencies {
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.0"))
@@ -24,6 +25,9 @@ dependencies {
     testImplementation("io.ktor:ktor-client-cio:$ktorVersion")
     testImplementation("io.ktor:ktor-client-auth:$ktorVersion")
     testImplementation("org.slf4j:slf4j-jdk14:1.7.30")
+    testImplementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
+    testImplementation("com.sksamuel.hoplite:hoplite-hocon:$hopliteVersion")
+    testImplementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
 }
 
 tasks.test {
@@ -34,5 +38,5 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_1_8.toString()
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
 }

@@ -41,20 +41,21 @@ class SauceLabs {
                 return fileId
             }
 
-            logger.info("App '${app.name}' - uploading to SauceLabs from ${app.path}")
+            logger.info("App '${app.name}' - uploading to SauceLabs from ${app.file}")
 
             return runBlocking {
+                val fileName = app.file.name
                 val response = client.submitFormWithBinaryData(
                     url = "$baseUrl/v1/storage/upload",
                     formData = formData {
-                        append("name", app.path.name)
+                        append("name", fileName)
                         append(
-                            "payload", app.path.readBytes(),
+                            "payload", app.file.readBytes(),
                             Headers.build {
                                 append(HttpHeaders.ContentType, "application/octet-stream")
                                 append(
                                     HttpHeaders.ContentDisposition,
-                                    "filename=\"${app.path.name}\""
+                                    "filename=\"$fileName\""
                                 )
                             }
                         )
@@ -70,7 +71,7 @@ class SauceLabs {
 
         // https://docs.saucelabs.com/dev/api/storage/#get-app-storage-files
         private fun findAppOnServer(app: AppInfo): String? {
-            val hash = Hashing.sha256().hashBytes(app.path.readBytes())
+            val hash = Hashing.sha256().hashBytes(app.file.readBytes())
 
             return runBlocking {
                 val response = client.get("$baseUrl/v1/storage/files") {

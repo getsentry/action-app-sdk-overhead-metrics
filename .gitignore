@@ -40,6 +40,7 @@ gradle-app.setting
 
 # Cache of project
 .gradletasknamecache
+.cache
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core

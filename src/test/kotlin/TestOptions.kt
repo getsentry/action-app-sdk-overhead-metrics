@@ -1,20 +1,61 @@
 import com.google.common.collect.ImmutableMap
+import com.google.common.hash.Hashing
+import com.sksamuel.hoplite.ConfigLoader
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import io.ktor.util.*
 import org.openqa.selenium.MutableCapabilities
 import java.net.URL
+import java.nio.charset.Charset
+import java.nio.file.Files
+import java.nio.file.Path
 import java.time.LocalDateTime
 import java.util.logging.Logger
+import kotlin.io.path.createDirectories
+import kotlin.io.path.name
+import kotlin.io.path.notExists
 
-class TestOptions(
-    val platform: Platform,
-    private val server: Server,
-    val appsUnderTest: List<AppInfo>? = null
+data class AppInfo(val name: String, val activity: String? = null, val path: String) {
+    private val pathIsUrl = path.contains(':')
+
+    val file: Path by lazy {
+        if (!pathIsUrl) {
+            Path.of(path).toRealPath()
+        }
+
+        // If it's a remote file (URL) - use a local cache to avoid repeated downloads.
+        val urlHash = Hashing.crc32().hashString(path, Charset.defaultCharset()).toString()
+        val cacheFile = Path.of(".cache/$urlHash-" + Path.of(path).name)
+        if (cacheFile.notExists()) {
+            cacheFile.parent.createDirectories()
+            URL(path).openStream().use { Files.copy(it, cacheFile) }
+        }
+        cacheFile.toRealPath()
+    }
+}
+
+data class TestOptions(
+    val apps: List<AppInfo>,
+    val startupTimeTest: StartupTimeTest.Options?,
+    val binarySizeTest: BinarySizeTest.Options?,
+    private val server: Server = if (isCI) Server.SauceLabs else Server.LocalHost,
 ) {
     val logger: Logger = Logger.getLogger("AppiumTest")
-    val isCI = System.getenv().containsKey("CI")
+
+    val platform: Platform = when (Path.of(apps.first().path).extension.toLowerCasePreservingASCIIRules()) {
+        "apk" -> Platform.Android
+        "aab" -> Platform.Android
+        "app" -> Platform.IOS
+        "ipa" -> Platform.IOS
+        else -> throw Exception("Unknown app extension - cannot determine platform")
+    }
+
+    companion object {
+        val isCI = System.getenv().containsKey("CI")
+        val instance: TestOptions =
+            ConfigLoader().loadConfigOrThrow(System.getenv()["TEST_CONFIG"] ?: "./tests/android.yml")
+    }
 
     enum class Platform {
         Android,
@@ -26,36 +67,33 @@ class TestOptions(
         SauceLabs
     }
 
-    fun setup(): AppiumDriver {
+    fun createDriver(): AppiumDriver {
         val caps = capabilities()
-        val url = url()
 
-        if (appsUnderTest != null) {
-            when (server) {
-                Server.LocalHost -> {
-                    val otherAppsPaths = appsUnderTest.map {
-                        logger.info("Adding app ${it.name} from ${it.name} 'appium:otherApps'")
-                        it.path.toString().replace('\\', '/')
-                    }
-
-                    // Local Appium requires JSON array (i.e. a string) instead of a list.
-                    caps.setCapability(
-                        "appium:otherApps",
-                        "[\"${otherAppsPaths.joinToString("\", \"")}\"]"
-                    )
+        when (server) {
+            Server.LocalHost -> {
+                val otherAppsPaths = apps.map {
+                    logger.info("Adding app ${it.name} from ${it.path} to 'appium:otherApps'")
+                    it.file.toString().replace('\\', '/')
                 }
 
-                Server.SauceLabs -> {
-                    val otherAppsPaths = appsUnderTest.map {
-                        val fileId = SauceLabs.uploadApp(it)
-                        val result = "storage:$fileId"
-                        logger.info("Adding app ${it.name} from ${it.name} 'appium:otherApps' as '$result")
-                        result
-                    }
+                // Local Appium requires JSON array (i.e. a string) instead of a list.
+                caps.setCapability(
+                    "appium:otherApps",
+                    "[\"${otherAppsPaths.joinToString("\", \"")}\"]"
+                )
+            }
 
-                    // SauceLabs requires this to be a list.
-                    caps.setCapability("appium:otherApps", otherAppsPaths)
+            Server.SauceLabs -> {
+                val otherAppsPaths = apps.map {
+                    val fileId = SauceLabs.uploadApp(it)
+                    val result = "storage:$fileId"
+                    logger.info("Adding app ${it.name} from ${it.path} to 'appium:otherApps' as '$result")
+                    result
                 }
+
+                // SauceLabs requires this to be a list.
+                caps.setCapability("appium:otherApps", otherAppsPaths)
             }
         }
 
@@ -67,7 +105,7 @@ class TestOptions(
         }
     }
 
-    private fun url() = when (server) {
+    private val url: URL = when (server) {
         Server.LocalHost -> URL("http://127.0.0.1:4723")
         Server.SauceLabs -> URL("https://${SauceLabs.user}:${SauceLabs.key}@ondemand.${SauceLabs.region}.saucelabs.com:443/wd/hub")
     }

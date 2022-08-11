@@ -3,7 +3,7 @@ description: Collect and test app metrics
 
 inputs:
   config:
-    description: Configuration file
+    description: Configuration file (YAML or HOCON)
     required: true
   sauce-user:
     description: SauceLabs username
@@ -15,7 +15,12 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - run: 'echo Using config file: ${{ inputs.config }}'
+    - run: |
+        echo Using config file: ${{ inputs.config }}
+        cat ${{ inputs.config }}
       shell: bash
-    # - run: ./gradlew :test
-    #   shell: bash
+#    - run: ./gradlew :test
+#      shell: bash
+#      env:
+#        TEST_CONFIG: ${{ inputs.config }}
+

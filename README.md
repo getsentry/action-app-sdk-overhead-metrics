@@ -1,28 +1,12 @@
-# Appium-based test
+# App metrics tests
 
-## Compile test apps
+This action contains tests for several (mobile) app metrics, such as:
 
-```shell
-./gradlew :sentry-android-integration-tests:test-app-plain:assembleRelease
-./gradlew :sentry-android-integration-tests:test-app-sentry:assembleRelease
-```
+* app binary size
+* app startup time (measured by Appium on SauceLabs real devices)
 
-## Run tests
+## Configuration
 
-You can run your tests on Sauce Labs:
+See [action.yml](action.yml) for the list of GH Action inputs.
 
-```shell
-./gradlew :sentry-android-integration-tests:appium:test --tests StartupTestsAndroidSauce.*
-```
-
-Or you can run the tests on your local Appium 2 installation (head over
-to [appium.io](https://appium.io/) to get started):
-
-```shell
-# run appium in another shell or detach
-appium & 
-# then start the test
-./gradlew :sentry-android-integration-tests:appium:test --tests StartupTestsAndroidLocal.*
-```
-
-> Note: the local appium test sometimes fails to connect to session... just run it again.
+Also have a look at a sample configuration: [./tests/android.yml](./tests/android.yml).
