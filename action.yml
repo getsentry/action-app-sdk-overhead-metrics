@@ -20,10 +20,7 @@ runs:
         cat ${{ inputs.config }}
       shell: bash
 
-    - run: |
-        echo "Running in $PWD"
-        ls -alh
-        ./gradlew --no-daemon :test
+    - run: ./gradlew :test
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
