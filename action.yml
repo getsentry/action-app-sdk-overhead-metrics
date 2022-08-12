@@ -21,6 +21,7 @@ runs:
       shell: bash
 
     - run: ./gradlew :test
+      id: tests
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
