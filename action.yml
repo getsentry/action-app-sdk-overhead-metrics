@@ -5,6 +5,12 @@ inputs:
   config:
     description: Configuration file (YAML or HOCON)
     required: true
+  name:
+    description: |
+      Metrics group identifier that will be used in the generated PR comment header.
+      This is useful if you run this action multiple times in the same PR.
+    required: false
+    default: ''
   sauce-user:
     description: SauceLabs username
     required: true
@@ -41,7 +47,7 @@ runs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
-        body-includes: '## Performance metrics'
+        body-includes: '## ${{ inputs.name }} Performance metrics'
 
     - name: Create or update comment
       uses: peter-evans/create-or-update-comment@c9fcb64660bc90ec1cc535646af190c992007c32 # v2.0.0
@@ -51,7 +57,7 @@ runs:
         issue-number: ${{ github.event.pull_request.number }}
         edit-mode: replace
         body: |
-          ## Performance metrics :rocket:
+          ## ${{ inputs.name }} Performance metrics :rocket:
           |                   |                                    Plain  |                              With Sentry  |                                        Diff  |
           |-------------------|-----------------------------------------: |-----------------------------------------: |--------------------------------------------: |
           | Startup time (ms) | ${{ steps.tests.outputs.StartTimeApp1 }}  | ${{ steps.tests.outputs.StartTimeApp2 }}  | **${{ steps.tests.outputs.StartTimeDiff }}** |
