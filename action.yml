@@ -20,6 +20,11 @@ runs:
         cat ${{ inputs.config }}
       shell: bash
 
+    - uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+
     - run: ./gradlew :test
       id: tests
       shell: bash
