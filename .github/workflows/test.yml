@@ -10,8 +10,8 @@ jobs:
       - uses: ./
         with:
           config: tests/android.yml
-          sauce-user: ${{ secrets.SAUCE_USER }}
-          sauce-key: ${{ secrets.SAUCE_KEY }}
+          sauce-user: ${{ secrets.SAUCE_USERNAME }}
+          sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
 
   ios:
     runs-on: ubuntu-latest
@@ -20,5 +20,5 @@ jobs:
       - uses: ./
         with:
           config: tests/ios.yml
-          sauce-user: ${{ secrets.SAUCE_USER }}
-          sauce-key: ${{ secrets.SAUCE_KEY }}
+          sauce-user: ${{ secrets.SAUCE_USERNAME }}
+          sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
