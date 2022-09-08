@@ -153,9 +153,9 @@ data class TestOptions(
                 caps.setCapability("appium:automationName", "UiAutomator2")
 
                 if (server == Server.SauceLabs) {
-                    // Pixel 4 XL - ARM | octa core | 1785 MHz
-                    caps.setCapability("appium:deviceName", "Google Pixel 4 XL")
-                    // Pixel 4 XL has three devices, one for each Android 10, 11, 12.
+                    // Samsung Galaxy S22, S22+, S22 Ultra  - ARM | octa core | 1785 MHz
+                    // They should all provide similar CPU performance.
+                    caps.setCapability("appium:deviceName", "Samsung Galaxy S22.*")
                     caps.setCapability("appium:platformVersion", "12")
                 }
             }
