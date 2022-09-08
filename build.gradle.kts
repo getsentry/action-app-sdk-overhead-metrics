@@ -25,7 +25,7 @@ dependencies {
     testImplementation("io.ktor:ktor-client-core:$ktorVersion")
     testImplementation("io.ktor:ktor-client-cio:$ktorVersion")
     testImplementation("io.ktor:ktor-client-auth:$ktorVersion")
-    testImplementation("org.slf4j:slf4j-jdk14:1.7.30")
+    testImplementation("org.slf4j:slf4j-jdk14:2.0.0")
     testImplementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     testImplementation("com.sksamuel.hoplite:hoplite-hocon:$hopliteVersion")
     testImplementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
