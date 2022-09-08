@@ -26,8 +26,8 @@ class SauceLabs {
         private val client = HttpClient(CIO) {
             expectSuccess = true
             install(HttpTimeout) {
-                connectTimeoutMillis = 60 * 1000
-                requestTimeoutMillis = 60 * 1000
+                connectTimeoutMillis = 300_000
+                requestTimeoutMillis = 300_000
             }
             install(Auth) {
                 basic {

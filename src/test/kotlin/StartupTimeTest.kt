@@ -3,6 +3,7 @@ import com.google.common.math.Stats
 import io.appium.java_client.android.Activity
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
@@ -103,59 +104,59 @@ class StartupTimeTest : TestBase() {
                     driver.manage().logs().get("logcat")
                 }
 
+                val appTimes = mutableListOf<Long>()
                 for (i in 1..runs) {
-                    printf("$logAppPrefix collecting startup times: %d/%d", app.name, i, runs)
+                    printf("$logAppPrefix measuring startup times: %d/%d", app.name, i, runs)
 
                     // kill the app and sleep before running the next iteration
-                    when (baseOptions.platform) {
+                    val startupTime = when (baseOptions.platform) {
                         TestOptions.Platform.Android -> {
                             val androidDriver = (driver as AndroidDriver)
                             // Note: there's also .activateApp() which should be OS independent, but doesn't seem to wait for the activity to start
                             androidDriver.startActivity(Activity(app.name, app.activity))
                             androidDriver.terminateApp(app.name)
+
+                            // Originally we used a code that loaded a list of executed Appium commands and used the time
+                            // that the 'startActivity' command took. It seems like this time includes some overhead of the
+                            // Appium controller because the times were about 900 ms, while the time reported in logcat
+                            // was `ActivityManager: Displayed io.../.MainActivity: +276ms` or `... +1s40ms`
+                            //   val times = driver.events.commands.filter { it.name == "startActivity" } .map { it.endTimestamp - it.startTimestamp }
+                            //   val offset = j * runs
+                            //   times.subList(offset, offset + runs)
+                            val logEntries = driver.manage().logs().get("logcat")
+                            val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
+                            val times = logEntries.mapNotNull {
+                                val groups = regex.find(it.message)?.groupValues
+                                if (groups == null) {
+                                    null
+                                } else {
+                                    printf("$logAppPrefix logcat entry processed: %s", app.name, it.message)
+                                    val seconds = if (groups[1].isEmpty()) 0 else groups[1].toLong()
+                                    seconds * 1000 + groups[2].toLong()
+                                }
+                            }
+                            times.shouldHaveSize(1)
+                            times.first()
                         }
 
                         TestOptions.Platform.IOS -> {
                             val iosDriver = (driver as IOSDriver)
                             iosDriver.activateApp(app.name)
                             iosDriver.terminateApp(app.name)
+
+                            val times = driver.events.commands.filter { it.name == "activateApp" }
+                                .map { it.endTimestamp - it.startTimestamp }
+                            times.shouldHaveSize(j * runs + i)
+                            times.last()
                         }
                     }
+                    appTimes.add(startupTime)
 
                     // sleep before the next test run
                     Thread.sleep(sleepTimeMs)
                 }
 
-                val appTimes = when (baseOptions.platform) {
-                    TestOptions.Platform.Android -> {
-                        // Originally we used a code that loaded a list of executed Appium commands and used the time
-                        // that the 'startActivity' command took. It seems like this time includes some overhead of the
-                        // Appium controller because the times were about 900 ms, while the time reported in logcat
-                        // was `ActivityManager: Displayed io.../.MainActivity: +276ms` or `... +1s40ms`
-                        //   val times = driver.events.commands.filter { it.name == "startActivity" } .map { it.endTimestamp - it.startTimestamp }
-                        //   val offset = j * runs
-                        //   times.subList(offset, offset + runs)
-                        val logEntries = driver.manage().logs().get("logcat")
-                        val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
-                        logEntries.mapNotNull {
-                            val groups = regex.find(it.message)?.groupValues
-                            if (groups == null) {
-                                null
-                            } else {
-                                val seconds = if (groups[1].isEmpty()) 0 else groups[1].toLong()
-                                seconds * 1000 + groups[2].toLong()
-                            }
-                        }
-                    }
-
-                    TestOptions.Platform.IOS -> {
-                        val times = driver.events.commands.filter { it.name == "activateApp" }
-                            .map { it.endTimestamp - it.startTimestamp }
-                        val offset = j * runs
-                        times.subList(offset, offset + runs)
-                    }
-                }
-
+                printf("$logAppPrefix collected %d/%d startup times", app.name, appTimes.size, runs)
                 appTimes.size.shouldBe(runs)
                 measuredTimes.add(appTimes)
             }
