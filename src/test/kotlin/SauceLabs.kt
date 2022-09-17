@@ -10,9 +10,7 @@ import io.ktor.client.request.forms.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import java.nio.file.Path
 import java.util.logging.Logger
-import kotlin.io.path.name
 import kotlin.io.path.readBytes
 
 class SauceLabs {
@@ -50,18 +48,17 @@ class SauceLabs {
             logger.info("App '${app.name}' - uploading to SauceLabs from ${app.file}")
 
             return runBlocking {
-                val fileName = Path.of(app.path).name
                 val response = client.submitFormWithBinaryData(
                     url = "$baseUrl/v1/storage/upload",
                     formData = formData {
-                        append("name", fileName)
+                        append("name", app.fileName)
                         append(
                             "payload", app.file.readBytes(),
                             Headers.build {
                                 append(HttpHeaders.ContentType, "application/octet-stream")
                                 append(
                                     HttpHeaders.ContentDisposition,
-                                    "filename=\"$fileName\""
+                                    "filename=\"${app.fileName}\""
                                 )
                             }
                         )

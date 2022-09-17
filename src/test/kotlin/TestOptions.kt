@@ -13,7 +13,6 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.util.logging.Logger
 import kotlin.io.path.createDirectories
-import kotlin.io.path.name
 import kotlin.io.path.notExists
 
 data class AppInfo(val name: String, val activity: String? = null, val path: String) {
@@ -23,7 +22,7 @@ data class AppInfo(val name: String, val activity: String? = null, val path: Str
         if (pathIsUrl) {
             // If it's a remote file (URL) - use a local cache to avoid repeated downloads.
             val urlHash = Hashing.crc32().hashString(path, Charset.defaultCharset()).toString()
-            val cacheFile = Path.of(".cache/$urlHash-" + Path.of(path).name)
+            val cacheFile = Path.of(".cache/$urlHash-$fileName")
             if (cacheFile.notExists()) {
                 cacheFile.parent.createDirectories()
                 URL(path).openStream().use { Files.copy(it, cacheFile) }
@@ -37,6 +36,8 @@ data class AppInfo(val name: String, val activity: String? = null, val path: Str
             appPath.toRealPath()
         }
     }
+
+    val fileName = path.split('/', '\\').last()
 }
 
 data class TestOptions(
@@ -47,7 +48,7 @@ data class TestOptions(
 ) {
     val logger: Logger = Logger.getLogger("AppiumTest")
 
-    val platform: Platform = when (Path.of(apps.first().path).extension.toLowerCasePreservingASCIIRules()) {
+    val platform: Platform = when (apps.first().path.split('.').last().toLowerCasePreservingASCIIRules()) {
         "apk" -> Platform.Android
         "aab" -> Platform.Android
         "app" -> Platform.IOS
@@ -57,7 +58,7 @@ data class TestOptions(
 
     companion object {
         val isCI = System.getenv().containsKey("CI")
-        val configFile = Path.of(System.getenv()["TEST_CONFIG"] ?: "./tests/android.yml")
+        val configFile: Path = Path.of(System.getenv()["TEST_CONFIG"] ?: "./tests/android.yml")
         val instance: TestOptions = ConfigLoader().loadConfigOrThrow(configFile.toString())
     }
 
