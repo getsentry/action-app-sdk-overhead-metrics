@@ -1,18 +1,16 @@
 apps:
+  - name: com.example.android.contactmanager
+    activity: ContactManager
+    path: 'https://raw.githubusercontent.com/appium/appium-android-driver/master/test/assets/ContactManager.apk'
   - name: com.saucelabs.mydemoapp.rn
     activity: MainActivity
     path: 'https://github.com/saucelabs/my-demo-app-rn/releases/download/v1.3.0/Android-MyDemoAppRN.1.3.0.build-244.apk'
-  # TODO find another publicly available app so that we can measure and test `diff`
-  #      https://github.com/saucelabs/my-demo-app-android/releases doesn't work because the main activity isn't exported
-  #  - name: com.saucelabs.mydemoapp.rn
-  #    activity: view.activities.MainActivity
-  #    path: 'https://github.com/saucelabs/my-demo-app-android/releases/download/1.0.13/mda-androidTest-1.0.13-15.apk'
 
 startupTimeTest:
   runs: 5
-  diffMin: -1000
+  diffMin: 0
   diffMax: 1000
 
 binarySizeTest:
-  diffMin: 14.00 MiB
-  diffMax: 14.02 MiB
+  diffMin: 31.76 MiB
+  diffMax: 31.78 MiB
