@@ -31,10 +31,8 @@ runs:
         distribution: 'temurin'
         java-version: '11'
 
-    - run: |
-        ./gradlew :test
-        ./gradlew :run
-      id: tests
+    - name: Run tests
+      run: ./gradlew :test
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
@@ -43,6 +41,14 @@ runs:
         SAUCE_USERNAME: ${{ inputs.sauce-user }}
         SAUCE_ACCESS_KEY: ${{ inputs.sauce-key }}
 
+    - name: Process results
+      run: ./gradlew :run
+      id: process
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        RESULT_NAME: ${{ inputs.name }}
+
     - name: Find Comment
       uses: peter-evans/find-comment@1769778a0c5bd330272d749d12c036d65e70d39d # v2.0.0
       if: github.event.pull_request.number
@@ -50,7 +56,7 @@ runs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
-        body-includes: ${{ steps.tests.outputs.commentTitle }}
+        body-includes: ${{ steps.process.outputs.commentTitle }}
 
     - name: Create or update comment
       uses: peter-evans/create-or-update-comment@c9fcb64660bc90ec1cc535646af190c992007c32 # v2.0.0
@@ -59,4 +65,4 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         edit-mode: replace
-        body: ${{ steps.tests.outputs.commentBody }}
+        body: ${{ steps.process.outputs.commentBody }}
