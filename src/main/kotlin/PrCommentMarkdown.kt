@@ -1,11 +1,15 @@
-class PrCommentMarkdown(private val result: ResultsFile) {
-    fun printGitHubActionsOutputs() {
+class PrCommentMarkdown(private val result: ResultsFile, private val baselineResults: ResultsSet) {
+    fun print(isCI: Boolean) {
         var body = build()
-        body = body.replace("%", "%25")
-        body = body.replace("\n", "%0A")
-        body = body.replace("\r", "%0D")
-        println("::set-output name=commentBody::$body")
-        println("::set-output name=commentTitle::$title")
+        if (isCI) {
+            body = body.replace("%", "%25")
+            body = body.replace("\n", "%0A")
+            body = body.replace("\r", "%0D")
+            println("::set-output name=commentBody::$body")
+            println("::set-output name=commentTitle::$title")
+        } else {
+            println(body)
+        }
     }
 
     private val title get() = "## ${System.getenv("RESULT_NAME") ?: ""} Performance metrics :rocket:"

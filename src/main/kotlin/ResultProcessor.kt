@@ -1,7 +1,11 @@
 import org.kohsuke.github.GHWorkflow
 import org.kohsuke.github.GHWorkflowRun
 import org.kohsuke.github.GitHubBuilder
+import java.io.FileOutputStream
 import java.nio.file.Path
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.name
 import kotlin.system.exitProcess
@@ -29,23 +33,29 @@ class ResultProcessor {
 
         downloadResults()
 
-        val previousResultsSet = ResultsSet(previousResultsDir)
-        previousResultsSet.add(latestResults.path, info = Git.hash)
-
-        val resultMarkdown = PrCommentMarkdown(latestResults)
-
         if (isCI) {
             println("::echo::on")
             println("::set-output name=artifactName::$artifactName")
             println("::set-output name=artifactPath::${previousResultsDir}")
-            resultMarkdown.printGitHubActionsOutputs()
-            println("::echo::off")
-        } else {
-            println(resultMarkdown.build())
         }
+
+        val baselineResults = ResultsSet(baselineResultsDir)
+        val resultMarkdown = PrCommentMarkdown(latestResults, baselineResults)
+        resultMarkdown.print(isCI)
+
+        if (isCI) {
+            println("::echo::off")
+        }
+
+        // Copy the latest test run results to the archived result dir.
+        val previousResults = ResultsSet(previousResultsDir)
+        previousResults.add(latestResults.path, info = Git.hash)
     }
 
     private fun downloadResults() {
+        baselineResultsDir.createDirectories()
+        previousResultsDir.createDirectories()
+
         if (!env.containsKey("GITHUB_TOKEN")) {
             return
         }
@@ -53,13 +63,13 @@ class ResultProcessor {
         val github = GitHubBuilder().withOAuthToken(env["GITHUB_TOKEN"]!!).build()
         val repo = github.getRepository(env["GITHUB_REPOSITORY"]!!)
         val workflow = repo.getWorkflow(Path.of(env["GITHUB_WORKFLOW"]!!).name)
-        downloadResultsFor(workflow, Git.baseBranch)
+        downloadResultsFor(workflow, Git.baseBranch, baselineResultsDir)
         if (Git.baseBranch != Git.branch) {
-            downloadResultsFor(workflow, Git.baseBranch)
+            downloadResultsFor(workflow, Git.branch, previousResultsDir)
         }
     }
 
-    private fun downloadResultsFor(workflow: GHWorkflow, branch: String) {
+    private fun downloadResultsFor(workflow: GHWorkflow, branch: String, targetDir: Path) {
         println("Trying to download previous results for branch $branch")
 
         val run = workflow.listRuns()
@@ -75,6 +85,32 @@ class ResultProcessor {
             return
         }
 
-        // TODO
+        println("Downloading artifact ${artifact.archiveDownloadUrl} and extracting to $targetDir")
+        artifact.download {
+            val zipStream = ZipInputStream(it)
+            var entry: ZipEntry?
+            // while there are entries I process them
+            while (true) {
+                entry = zipStream.nextEntry
+                if (entry == null) {
+                    break
+                }
+                if (entry.isDirectory) {
+                    Path.of(entry.name).createDirectories()
+                } else {
+                    println("Extracting ${entry.name}")
+                    val outFile = FileOutputStream(targetDir.resolve(entry.name).toFile())
+                    while (zipStream.available() > 0) {
+                        val c = zipStream.read()
+                        if (c > 0) {
+                            outFile.write(c)
+                        } else {
+                            break
+                        }
+                    }
+                    outFile.close()
+                }
+            }
+        }
     }
 }
