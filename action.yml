@@ -31,11 +31,14 @@ runs:
         distribution: 'temurin'
         java-version: '11'
 
-    - run: ./gradlew :test
+    - run: |
+        ./gradlew :test
+        ./gradlew :run
       id: tests
       shell: bash
       working-directory: ${{ github.action_path }}
       env:
+        RESULT_NAME: ${{ inputs.name }}
         TEST_CONFIG: ${{ github.workspace }}/${{ inputs.config }}
         SAUCE_USERNAME: ${{ inputs.sauce-user }}
         SAUCE_ACCESS_KEY: ${{ inputs.sauce-key }}
@@ -47,7 +50,7 @@ runs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
-        body-includes: '## ${{ inputs.name }} Performance metrics'
+        body-includes: ${{ steps.tests.outputs.commentTitle }}
 
     - name: Create or update comment
       uses: peter-evans/create-or-update-comment@c9fcb64660bc90ec1cc535646af190c992007c32 # v2.0.0
@@ -56,9 +59,4 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         edit-mode: replace
-        body: |
-          ## ${{ inputs.name }} Performance metrics :rocket:
-          |                   |                                    Plain  |                              With Sentry  |                                        Diff  |
-          |-------------------|-----------------------------------------: |-----------------------------------------: |--------------------------------------------: |
-          | Startup time (ms) | ${{ steps.tests.outputs.StartTimeApp1 }}  | ${{ steps.tests.outputs.StartTimeApp2 }}  | **${{ steps.tests.outputs.StartTimeDiff }}** |
-          | Size (bytes)      | ${{ steps.tests.outputs.SizeApp1 }}       | ${{ steps.tests.outputs.SizeApp2 }}       | **${{ steps.tests.outputs.SizeDiff }}**      |
+        body: ${{ steps.tests.outputs.commentBody }}
