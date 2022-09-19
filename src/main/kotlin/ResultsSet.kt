@@ -10,16 +10,20 @@ class ResultsSet(val directory: Path) {
 
     fun add(file: Path, info: String?) {
         println("Preparing to add $file to $directory")
-        // rename all existing files, increasing the prefix
-        val files = directory.listDirectoryEntries().filter { it.isRegularFile() }.sortedByDescending {
-            it.name.split(delimiter).first().toInt()
-        }
-        files.forEach {
-            val parts = it.name.split(delimiter).toMutableList()
-            parts[0] = (parts[0].toInt() + 1).toString()
-            val newPath = it.resolveSibling(parts.joinToString(delimiter))
-            println("Renaming $it to $newPath")
-            it.moveTo(newPath)
+        if (directory.notExists()) {
+            directory.createDirectories()
+        } else {
+            // rename all existing files, increasing the prefix
+            val files = directory.listDirectoryEntries().filter { it.isRegularFile() }.sortedByDescending {
+                it.name.split(delimiter).first().toInt()
+            }
+            files.forEach {
+                val parts = it.name.split(delimiter).toMutableList()
+                parts[0] = (parts[0].toInt() + 1).toString()
+                val newPath = it.resolveSibling(parts.joinToString(delimiter))
+                println("Renaming $it to $newPath")
+                it.moveTo(newPath)
+            }
         }
         val newName = "1$delimiter" + (if (info == null) "" else "$info$delimiter") + "result.properties"
         println("Adding $file to $directory as $newName")
