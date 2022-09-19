@@ -31,6 +31,9 @@ runs:
         distribution: 'temurin'
         java-version: '11'
 
+    - run: env
+      shell: bash
+
     - name: Run tests
       run: ./gradlew :test
       shell: bash
