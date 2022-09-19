@@ -1,4 +1,4 @@
-class PrCommentMarkdown(val result: ResultsFile) {
+class PrCommentMarkdown(private val result: ResultsFile) {
     fun printGitHubActionsOutputs() {
         var body = build()
         body = body.replace("%", "%25")

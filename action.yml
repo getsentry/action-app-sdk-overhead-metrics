@@ -31,9 +31,6 @@ runs:
         distribution: 'temurin'
         java-version: '11'
 
-    - run: env
-      shell: bash
-
     - name: Run tests
       run: ./gradlew :test
       shell: bash
@@ -51,6 +48,13 @@ runs:
       working-directory: ${{ github.action_path }}
       env:
         RESULT_NAME: ${{ inputs.name }}
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v2
+      with:
+        name: ${{ steps.process.outputs.artifactName }}
+        path: ${{ steps.process.outputs.artifactPath }}
 
     - name: Find Comment
       uses: peter-evans/find-comment@1769778a0c5bd330272d749d12c036d65e70d39d # v2.0.0
