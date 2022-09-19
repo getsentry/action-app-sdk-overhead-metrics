@@ -16,6 +16,7 @@ class BinarySizeTest : TestBase() {
         val sizes = apps.map { Files.size(it.file) }.toList()
         for (j in apps.indices) {
             printf("$logAppPrefix size is %s", apps[j].name, ByteUtils.human(sizes[j]))
+            writeOutput(j.toString(), sizes[j])
         }
 
         if (apps.size == 2) {
@@ -35,12 +36,7 @@ class BinarySizeTest : TestBase() {
             if (options.diffMax != null) {
                 diff.shouldBeLessThan(ByteUtils.parse(options.diffMax!!))
             }
-
-            if (TestOptions.isCI) {
-                println("::set-output name=SizeApp1::${sizes[0]}")
-                println("::set-output name=SizeApp2::${sizes[1]}")
-                println("::set-output name=SizeDiff::$diff")
-            }
+            writeOutput("diff", diff)
         }
     }
 }

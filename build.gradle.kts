@@ -29,6 +29,7 @@ dependencies {
     testImplementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     testImplementation("com.sksamuel.hoplite:hoplite-hocon:$hopliteVersion")
     testImplementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
+    testImplementation("org.apache.commons:commons-configuration2:2.8.0")
 }
 
 tasks.test {

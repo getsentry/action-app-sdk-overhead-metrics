@@ -1,1 +1,1 @@
-rootProject.name = "appium"
+rootProject.name = "sdk-metrics"
