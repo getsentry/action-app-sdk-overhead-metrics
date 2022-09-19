@@ -3,6 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "1.7.10"
+    application
 }
 
 group = "io.sentry.appium.tests"
@@ -15,6 +16,8 @@ repositories {
 val ktorVersion = "2.1.0"
 val hopliteVersion = "2.6.2"
 dependencies {
+    implementation("org.apache.commons:commons-configuration2:2.8.0")
+
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -29,7 +32,6 @@ dependencies {
     testImplementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     testImplementation("com.sksamuel.hoplite:hoplite-hocon:$hopliteVersion")
     testImplementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
-    testImplementation("org.apache.commons:commons-configuration2:2.8.0")
 }
 
 tasks.test {
@@ -46,4 +48,8 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+}
+
+application {
+    mainClass.set("ResultProcessorKt")
 }
