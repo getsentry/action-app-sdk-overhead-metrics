@@ -3,10 +3,19 @@ import kotlin.io.path.*
 
 /// Wraps a directory containing multiple (N-*-result.properties) files.
 /// The files are numbered from the most recently added one, to the oldest one.
-class ResultsSet(val directory: Path) {
+class ResultsSet(private val directory: Path) {
     companion object {
         private const val delimiter = "-"
     }
+
+    fun count() = files().count()
+
+    fun items() = files().map {
+        val hash = it.name.split(delimiter)[1]
+        Pair(hash, ResultsFile(it))
+    }
+
+    private fun files() = directory.listDirectoryEntries().filter { it.isRegularFile() }
 
     fun add(file: Path, info: String?) {
         println("Preparing to add $file to $directory")

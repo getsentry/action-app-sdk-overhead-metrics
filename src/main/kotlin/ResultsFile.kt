@@ -16,6 +16,12 @@ class ResultsFile(val path: Path = Path.of(latestResultsFilePath)) {
 
     fun get(scope: String, name: String): String = contents.getString(fullKey(scope, name), "")
 
+    fun getDouble(scope: String, name: String): Double = contents.getDouble(fullKey(scope, name), 0.0)
+
+    fun getLong(scope: String, name: String): Long = contents.getLong(fullKey(scope, name), 0)
+
+    fun getBytes(scope: String, name: String): String = ByteUtils.human(getLong(scope, name))
+
     private fun fullKey(scope: String, name: String) = "$scope.$name"
 
     private val contents: FileBasedConfiguration get() = builder.configuration

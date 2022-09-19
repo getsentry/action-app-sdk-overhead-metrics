@@ -39,17 +39,26 @@ class ResultProcessor {
             println("::set-output name=artifactPath::${previousResultsDir}")
         }
 
-        val baselineResults = ResultsSet(baselineResultsDir)
-        val resultMarkdown = PrCommentMarkdown(latestResults, baselineResults)
-        resultMarkdown.print(isCI)
+        val prComment = PrCommentBuilder()
+        prComment.addCurrentResult(latestResults)
+        if (Git.baseBranch != Git.branch) {
+            prComment.addAdditionalResultsSet(
+                "Baseline results on branch: ${Git.baseBranch})",
+                ResultsSet(baselineResultsDir)
+            )
+        }
+        prComment.addAdditionalResultsSet(
+            "Previous results on branch: ${Git.branch})",
+            ResultsSet(previousResultsDir)
+        )
+        prComment.print(isCI)
 
         if (isCI) {
             println("::echo::off")
         }
 
         // Copy the latest test run results to the archived result dir.
-        val previousResults = ResultsSet(previousResultsDir)
-        previousResults.add(latestResults.path, info = Git.hash)
+        ResultsSet(previousResultsDir).add(latestResults.path, info = Git.hash)
     }
 
     private fun downloadResults() {
@@ -64,9 +73,7 @@ class ResultProcessor {
         val repo = github.getRepository(env["GITHUB_REPOSITORY"]!!)
         val workflow = repo.getWorkflow(Path.of(env["GITHUB_WORKFLOW"]!!).name)
         downloadResultsFor(workflow, Git.baseBranch, baselineResultsDir)
-        if (Git.baseBranch != Git.branch) {
-            downloadResultsFor(workflow, Git.branch, previousResultsDir)
-        }
+        downloadResultsFor(workflow, Git.branch, previousResultsDir)
     }
 
     private fun downloadResultsFor(workflow: GHWorkflow, branch: String, targetDir: Path) {
