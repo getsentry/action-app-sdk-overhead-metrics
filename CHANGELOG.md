@@ -1,3 +1,9 @@
+## Unreleased
+
+### Features
+
+* Collect and print previous data on the same branch and data from the main branch.
+
 ## 1.2.0
 
 ### Features
