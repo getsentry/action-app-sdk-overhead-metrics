@@ -26,10 +26,11 @@ class Git {
 
 fun executeCommand(command: String): String {
     val process = Runtime.getRuntime().exec(command)
-    val reader = BufferedReader(InputStreamReader(process.inputStream))
+    val stdOut = BufferedReader(InputStreamReader(process.inputStream))
+    val stdErr = BufferedReader(InputStreamReader(process.errorStream))
     if (process.waitFor() == 0) {
-        return reader.readText().trim()
+        return stdOut.readText().trim()
     } else {
-        throw Exception("Command '$command' exited with code ${process.waitFor()}")
+        throw Exception("Command '$command' exited with code ${process.waitFor()}\n${stdErr.readText().trim()}")
     }
 }
