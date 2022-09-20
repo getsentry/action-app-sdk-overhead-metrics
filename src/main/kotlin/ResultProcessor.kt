@@ -5,6 +5,7 @@ import java.io.FileOutputStream
 import java.nio.file.Path
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
+import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.system.exitProcess
@@ -35,7 +36,7 @@ class ResultProcessor {
         if (isCI) {
             println("::echo::on")
             println("::set-output name=artifactName::$artifactName")
-            println("::set-output name=artifactPath::${previousResultsDir}")
+            println("::set-output name=artifactPath::${previousResultsDir.absolutePathString()}")
         }
 
         val prComment = PrCommentBuilder()
