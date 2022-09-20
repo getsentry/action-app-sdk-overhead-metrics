@@ -12,7 +12,7 @@ class ResultsSet(private val directory: Path) {
 
     fun items() = files().map {
         val hash = it.name.split(delimiter)[1]
-        Pair(hash, ResultsFile(it))
+        Pair(hash, ResultFile(it))
     }
 
     private fun files() = directory.listDirectoryEntries().filter { it.isRegularFile() }

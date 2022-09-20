@@ -18,9 +18,9 @@ class PrCommentBuilder {
 
     private val title get() = "## ${System.getenv("RESULT_NAME") ?: ""} Performance metrics :rocket:"
 
-    fun addCurrentResult(result: ResultsFile) = addResult(title, result)
+    fun addCurrentResult(result: ResultFile) = addResult(title, result)
 
-    private fun addResult(header: String, r: ResultsFile) {
+    private fun addResult(header: String, r: ResultFile) {
         buffer.append(
             """
           $header
@@ -50,7 +50,7 @@ class PrCommentBuilder {
     }
 
     private fun addDetailsTable(
-        header: String, items: List<Pair<String, ResultsFile>>, getValue: (r: ResultsFile, key: String) -> String
+        header: String, items: List<Pair<String, ResultFile>>, getValue: (r: ResultFile, key: String) -> String
     ) {
         buffer.append(
             """
@@ -66,7 +66,7 @@ class PrCommentBuilder {
         )
         items.forEach {
             buffer.append(
-                """      
+                """
                 <tr>
                   <th align="left">${it.first}</th>
                   <td align="right">${getValue(it.second, "0")}</td>

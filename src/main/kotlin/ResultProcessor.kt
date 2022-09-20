@@ -25,7 +25,7 @@ class ResultProcessor {
     private val baselineResultsDir = Path.of("out/baseline-results")
 
     fun main() {
-        val latestResults = ResultsFile()
+        val latestResults = ResultFile()
         if (!latestResults.path.exists()) {
             println("Can't process latest results - the file doesn't exist: ${latestResults.path}")
             exitProcess(1)

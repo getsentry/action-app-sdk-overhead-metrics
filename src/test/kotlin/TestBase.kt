@@ -7,7 +7,7 @@ abstract class TestBase(
 ) {
     protected val apps = baseOptions.apps
     protected val logAppPrefix = "App %-${apps.maxOfOrNull { it.name.length }}s"
-    private val results = ResultsFile()
+    private val results = ResultFile()
 
     @Suppress("NOTHING_TO_INLINE") // Inline ensures the logger prints the actual caller.
     protected inline fun printf(format: String, vararg args: Any?, logLevel: Level = Level.INFO) {

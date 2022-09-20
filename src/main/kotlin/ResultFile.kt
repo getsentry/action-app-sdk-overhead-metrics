@@ -7,9 +7,9 @@ import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.notExists
 
-class ResultsFile(val path: Path = Path.of(latestResultsFilePath)) {
+class ResultFile(val path: Path = Path.of(latestResultFilePath)) {
     companion object {
-        const val latestResultsFilePath = "out/latest-result.properties"
+        const val latestResultFilePath = "out/latest-result.properties"
     }
 
     fun set(scope: String, name: String, value: Any) = contents.setProperty(fullKey(scope, name), value)
