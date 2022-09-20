@@ -71,6 +71,7 @@ class StartupTimeTest : TestBase() {
                 stats2.populationStandardDeviation().shouldBeLessThan(options.stdDevMax.toDouble())
             }
             filteredTimes.add(times2)
+            writeOutput(j.toString(), stats2.mean())
         }
 
         if (apps.size == 2) {
@@ -89,12 +90,7 @@ class StartupTimeTest : TestBase() {
             if (options.diffMax != null) {
                 diff.shouldBeLessThan(options.diffMax!!.toDouble())
             }
-
-            if (TestOptions.isCI) {
-                println(String.format("::set-output name=StartTimeApp1::%.2f", means[0]))
-                println(String.format("::set-output name=StartTimeApp2::%.2f", means[1]))
-                println(String.format("::set-output name=StartTimeDiff::%.2f", diff))
-            }
+            writeOutput("diff", diff)
         }
     }
 

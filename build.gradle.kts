@@ -3,6 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
     kotlin("jvm") version "1.7.10"
+    application
 }
 
 group = "io.sentry.appium.tests"
@@ -15,6 +16,13 @@ repositories {
 val ktorVersion = "2.1.0"
 val hopliteVersion = "2.6.2"
 dependencies {
+    implementation("org.apache.commons:commons-configuration2:2.8.0")
+    implementation("commons-beanutils:commons-beanutils:1.9.4")
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-cio:$ktorVersion")
+    implementation("io.ktor:ktor-client-auth:$ktorVersion")
+    implementation("org.kohsuke:github-api:1.308")
+
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -22,9 +30,6 @@ dependencies {
     testImplementation("io.kotest:kotest-assertions-core:5.4.2")
     testImplementation("com.google.guava:guava:31.1-jre")
     testImplementation("com.jayway.jsonpath:json-path:2.7.0")
-    testImplementation("io.ktor:ktor-client-core:$ktorVersion")
-    testImplementation("io.ktor:ktor-client-cio:$ktorVersion")
-    testImplementation("io.ktor:ktor-client-auth:$ktorVersion")
     testImplementation("org.slf4j:slf4j-jdk14:2.0.0")
     testImplementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
     testImplementation("com.sksamuel.hoplite:hoplite-hocon:$hopliteVersion")
@@ -45,4 +50,8 @@ tasks.test {
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+}
+
+application {
+    mainClass.set("ResultProcessorKt")
 }
