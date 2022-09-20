@@ -4,7 +4,15 @@ import java.io.InputStreamReader
 
 class Git {
     companion object {
-        val branch by lazy { executeCommand("git branch --show-current") }
+        val branch: String by lazy {
+            if (!System.getenv("GITHUB_HEAD_REF").isNullOrEmpty()) {
+                System.getenv("GITHUB_HEAD_REF")
+            } else if (System.getenv("GITHUB_REF").startsWith("refs/heads/")) {
+                System.getenv("GITHUB_REF").removePrefix("refs/heads/")
+            } else {
+                executeCommand("git branch --show-current")
+            }
+        }
 
         val baseBranch by lazy {
             val baseRef = System.getenv("GITHUB_BASE_REF")
