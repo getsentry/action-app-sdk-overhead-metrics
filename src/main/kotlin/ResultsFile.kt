@@ -20,6 +20,8 @@ class ResultsFile(val path: Path = Path.of(latestResultsFilePath)) {
 
     fun getLong(scope: String, name: String): Long = contents.getLong(fullKey(scope, name), 0)
 
+    fun getDecimal(scope: String, name: String): String = String.format("%.2f", getDouble(scope, name))
+
     fun getBytes(scope: String, name: String): String = ByteUtils.human(getLong(scope, name))
 
     private fun fullKey(scope: String, name: String) = "$scope.$name"

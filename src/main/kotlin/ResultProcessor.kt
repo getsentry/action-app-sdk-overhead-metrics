@@ -43,12 +43,12 @@ class ResultProcessor {
         prComment.addCurrentResult(latestResults)
         if (Git.baseBranch != Git.branch) {
             prComment.addAdditionalResultsSet(
-                "Baseline results on branch: ${Git.baseBranch})",
+                "Baseline results on branch: ${Git.baseBranch}",
                 ResultsSet(baselineResultsDir)
             )
         }
         prComment.addAdditionalResultsSet(
-            "Previous results on branch: ${Git.branch})",
+            "Previous results on branch: ${Git.branch}",
             ResultsSet(previousResultsDir)
         )
         prComment.print(isCI)
