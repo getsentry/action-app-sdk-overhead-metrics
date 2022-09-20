@@ -49,17 +49,46 @@ class PrCommentBuilder {
         buffer.append("\n")
     }
 
+    private fun addDetailsTable(
+        header: String, items: List<Pair<String, ResultsFile>>, getValue: (r: ResultsFile, key: String) -> String
+    ) {
+        buffer.append(
+            """
+          <h3>$header</h3>
+          <table>
+            <tr>
+              <th>Revision</th>
+              <th align="right">Plain</th>
+              <th align="right">With Sentry</th>
+              <th align="right">Diff</th>
+            </tr>
+            """.trimIndent()
+        )
+        items.forEach {
+            buffer.append(
+                """      
+                <tr>
+                  <th align="left">${it.first}</th>
+                  <td align="right">${getValue(it.second, "0")}</td>
+                  <td align="right">${getValue(it.second, "1")}</td>
+                  <td align="right"><strong>${getValue(it.second, "diff")}</strong></td>
+                </tr>
+                """.trimIndent()
+            )
+        }
+        buffer.append("</table>\n")
+    }
+
     fun addAdditionalResultsSet(name: String, results: ResultsSet) {
         if (results.count() == 0) {
             return
         }
 
-        buffer.append("<details><summary><h3>$name</h3></summary>")
-        buffer.append("\n")
-        results.items().take(10).forEach {
-            addResult("<h4>Commit ${it.first}</h4>", it.second)
-        }
-        buffer.append("\n")
+        val items = results.items().take(10)
+
+        buffer.append("<details><summary><h3>$name</h3></summary>\n")
+        addDetailsTable("Startup times", items) { r, key -> r.getDecimal("startup time", key) + " ms" }
+        addDetailsTable("App size", items) { r, key -> r.getBytes("app size", key) }
         buffer.append("</details>")
         buffer.append("\n")
     }
