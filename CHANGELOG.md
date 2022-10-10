@@ -1,3 +1,11 @@
+# Changelog
+
+## Unreleased
+
+### Dependencies
+
+* Update `action/upload-artifact` to v3 to prepare for GHA [dropping Node12 support](https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/).
+
 ## 1.3.0
 
 ### Features
