@@ -1,22 +1,8 @@
-import java.io.File
-
 class PrCommentBuilder {
     private var buffer = StringBuilder()
 
-    fun print(isCI: Boolean) {
-        var body = buffer.toString()
-        if (isCI) {
-            body = body.replace("%", "%25")
-            body = body.replace("\n", "%0A")
-            body = body.replace("\r", "%0D")
-            println("::set-output name=commentBody::$body")
-            println("::set-output name=commentTitle::$title")
-        } else {
-            File("out/comment.html").writeText(body)
-        }
-    }
-
-    private val title get() = "## ${System.getenv("RESULT_NAME") ?: ""} Performance metrics :rocket:"
+    val title get() = "## ${System.getenv("RESULT_NAME") ?: ""} Performance metrics :rocket:"
+    val body get() = buffer.toString()
 
     fun addCurrentResult(result: ResultFile) = addResult(title, result)
 

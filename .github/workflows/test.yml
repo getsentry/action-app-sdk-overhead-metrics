@@ -1,6 +1,9 @@
 # Test the action itself
 on:
   push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
   android:

@@ -4,19 +4,31 @@ import java.io.InputStreamReader
 
 class Git {
     companion object {
+        private val env = System.getenv()
         val branch: String by lazy {
-            if (!System.getenv("GITHUB_HEAD_REF").isNullOrEmpty()) {
-                System.getenv("GITHUB_HEAD_REF")
-            } else if (System.getenv("GITHUB_REF").startsWith("refs/heads/")) {
-                System.getenv("GITHUB_REF").removePrefix("refs/heads/")
+            if (!env["GITHUB_HEAD_REF"].isNullOrEmpty()) {
+                env["GITHUB_HEAD_REF"]!!
+            } else if (env["GITHUB_REF"]?.startsWith("refs/heads/") == true) {
+                env["GITHUB_REF"]!!.removePrefix("refs/heads/")
             } else {
                 executeCommand("git branch --show-current")
             }
         }
 
         val baseBranch by lazy {
-            val baseRef = System.getenv("GITHUB_BASE_REF")
+            val baseRef = env["GITHUB_BASE_REF"]
             if (baseRef.isNullOrEmpty()) defaultBranch else baseRef
+        }
+
+        val repository by lazy {
+            var repo = env["GITHUB_REPOSITORY"]
+            if (repo.isNullOrEmpty()) {
+                repo = executeCommand("git remote get-url origin")
+                repo = repo!!.removePrefix("git@").removeSuffix(".git")
+                repo!!.replace(':', '/')
+            } else {
+                "github.com/$repo"
+            }
         }
 
         private val workingDirectory =

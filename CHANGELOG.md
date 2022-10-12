@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 1.4.0
+
+### Changes
+
+* Replace [deprecated](https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/) set-output with writing to `GITHUB_OUTPUT`.
 
 ### Dependencies
 
