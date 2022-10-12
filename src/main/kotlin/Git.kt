@@ -7,7 +7,7 @@ class Git {
         val branch: String by lazy {
             if (!System.getenv("GITHUB_HEAD_REF").isNullOrEmpty()) {
                 System.getenv("GITHUB_HEAD_REF")
-            } else if (System.getenv("GITHUB_REF").startsWith("refs/heads/")) {
+            } else if (System.getenv("GITHUB_REF")?.startsWith("refs/heads/") == true) {
                 System.getenv("GITHUB_REF").removePrefix("refs/heads/")
             } else {
                 executeCommand("git branch --show-current")
