@@ -131,7 +131,7 @@ class GitHub {
                 }
                 if (comment != null) {
                     println("Updating PR comment ${comment.htmlUrl} body")
-                    comment.update(comment.body)
+                    comment.update(commentBuilder.body)
                 } else {
                     println("Adding new PR comment to ${pullRequest!!.htmlUrl}")
                     pullRequest!!.comment(commentBuilder.body)
