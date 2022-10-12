@@ -33,11 +33,8 @@ class ResultProcessor {
 
         downloadResults()
 
-        if (isCI) {
-            println("::echo::on")
-            println("::set-output name=artifactName::$artifactName")
-            println("::set-output name=artifactPath::${previousResultsDir.absolutePathString()}")
-        }
+        GitHub.writeOutput("artifactName", artifactName)
+        GitHub.writeOutput("artifactPath", previousResultsDir.absolutePathString())
 
         val prComment = PrCommentBuilder()
         prComment.addCurrentResult(latestResults)
@@ -52,10 +49,6 @@ class ResultProcessor {
             ResultsSet(previousResultsDir)
         )
         prComment.print(isCI)
-
-        if (isCI) {
-            println("::echo::off")
-        }
 
         // Copy the latest test run results to the archived result dir.
         ResultsSet(previousResultsDir).add(latestResults.path, info = Git.hash)

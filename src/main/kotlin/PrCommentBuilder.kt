@@ -9,8 +9,8 @@ class PrCommentBuilder {
             body = body.replace("%", "%25")
             body = body.replace("\n", "%0A")
             body = body.replace("\r", "%0D")
-            println("::set-output name=commentBody::$body")
-            println("::set-output name=commentTitle::$title")
+            GitHub.writeOutput("commentTitle", title)
+            GitHub.writeOutput("commentBody", body)
         } else {
             File("out/comment.html").writeText(body)
         }
