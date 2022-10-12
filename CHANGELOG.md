@@ -5,6 +5,7 @@
 ### Dependencies
 
 * Update `action/upload-artifact` to v3 to prepare for GHA [dropping Node12 support](https://github.blog/changelog/2022-09-22-github-actions-all-actions-will-begin-running-on-node16-instead-of-node12/).
+* Replace [deprecated](https://github.blog/changelog/2022-10-11-github-actions-deprecating-save-state-and-set-output-commands/) set-output with writing to `GITHUB_OUTPUT`.  
 
 ## 1.3.0
 
