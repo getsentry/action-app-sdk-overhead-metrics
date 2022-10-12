@@ -120,7 +120,11 @@ class GitHub {
                 file.writeText(commentBuilder.body)
             } else {
                 val comments = pullRequest!!.comments
-                val author = github!!.myself.login
+                // Trying to fetch `github!!.myself` throws (in CI only): Exception in thread "main" org.kohsuke.github.HttpException:
+                //   {"message":"Resource not accessible by integration","documentation_url":"https://docs.github.com/rest/reference/users#get-the-authenticated-user"}
+                // Let's make this conditional on some env variable that's unlikely to be set.
+                // Do not use "CI" because that's commonly set during local development and testing.
+                val author = if(env.containsKey("GITHUB_ACTION")) "github-actions[bot]" else github!!.myself.login
                 val comment = comments.firstOrNull {
                     it.user.login.equals(author) &&
                             it.body.startsWith(commentBuilder.title, ignoreCase = true)
