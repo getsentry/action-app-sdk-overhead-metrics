@@ -55,21 +55,3 @@ runs:
       with:
         name: ${{ steps.process.outputs.artifactName }}
         path: ${{ steps.process.outputs.artifactPath }}
-
-    - name: Find Comment
-      uses: peter-evans/find-comment@1769778a0c5bd330272d749d12c036d65e70d39d # v2.0.0
-      if: github.event.pull_request.number
-      id: fc
-      with:
-        issue-number: ${{ github.event.pull_request.number }}
-        comment-author: 'github-actions[bot]'
-        body-includes: ${{ steps.process.outputs.commentTitle }}
-
-    - name: Create or update comment
-      uses: peter-evans/create-or-update-comment@c9fcb64660bc90ec1cc535646af190c992007c32 # v2.0.0
-      if: github.event.pull_request.number
-      with:
-        comment-id: ${{ steps.fc.outputs.comment-id }}
-        issue-number: ${{ github.event.pull_request.number }}
-        edit-mode: replace
-        body: ${{ steps.process.outputs.commentBody }}

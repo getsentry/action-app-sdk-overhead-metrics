@@ -7,7 +7,6 @@ fun main() = ResultProcessor().main()
 
 class ResultProcessor {
     private val env = System.getenv()
-    private val isCI = env.containsKey("CI")
     private val artifactName =
         "app-sdk-metrics-results" + (if (env["RESULT_NAME"].isNullOrEmpty()) "" else "-${env["RESULT_NAME"]}")
 
@@ -42,7 +41,8 @@ class ResultProcessor {
             "Previous results on branch: ${Git.branch}",
             ResultsSet(previousResultsDir)
         )
-        prComment.print(isCI)
+
+        GitHub.addOrUpdateComment(prComment)
 
         // Copy the latest test run results to the archived result dir.
         ResultsSet(previousResultsDir).add(latestResults.path, info = Git.hash)

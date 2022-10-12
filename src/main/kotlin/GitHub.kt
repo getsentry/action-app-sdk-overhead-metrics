@@ -1,6 +1,5 @@
-import org.kohsuke.github.GHWorkflow
-import org.kohsuke.github.GHWorkflowRun
-import org.kohsuke.github.GitHubBuilder
+import org.kohsuke.github.*
+import java.io.File
 import java.io.FileOutputStream
 import java.nio.file.Path
 import java.util.zip.ZipEntry
@@ -14,12 +13,40 @@ class GitHub {
         private val token = env["GITHUB_TOKEN"]
         private val github =
             if (token.isNullOrEmpty()) null else GitHubBuilder().withOAuthToken(token).build()
-        private val repo = github?.getRepository(env["GITHUB_REPOSITORY"]!!)
+        private val repo: GHRepository? by lazy {
+            if (Git.repository.startsWith("github.com/")) {
+                github?.getRepository(Git.repository.removePrefix("github.com/"))
+            } else {
+                null
+            }
+        }
         private val workflow: GHWorkflow? by lazy {
-            repo?.listWorkflows()?.single {
-                // GITHUB_WORKFLOW: The name of the workflow. For example, My test workflow. If the workflow file doesn't
-                // specify a name, the value of this variable is the full path of the workflow file in the repository.
-                listOf(it.name, it.path).contains(env["GITHUB_WORKFLOW"]!!)
+            if (env.containsKey("GITHUB_WORKFLOW")) {
+                repo?.listWorkflows()?.single {
+                    // GITHUB_WORKFLOW: The name of the workflow. For example, My test workflow. If the workflow file doesn't
+                    // specify a name, the value of this variable is the full path of the workflow file in the repository.
+                    listOf(it.name, it.path).contains(env["GITHUB_WORKFLOW"]!!)
+                }
+            } else {
+                null
+            }
+        }
+        private val pullRequest: GHPullRequest? by lazy {
+            // This is only set if a branch or tag is available for the event type.
+            // The ref given is fully-formed, meaning that
+            // * for branches the format is refs/heads/<branch_name>,
+            // * for pull requests it is refs/pull/<pr_number>/merge,
+            // * and for tags it is refs/tags/<tag_name>.
+            // For example, refs/heads/feature-branch-1.
+            val ref = env["GITHUB_REF"]
+            if (repo == null) {
+                null
+            } else if (ref?.startsWith("refs/pull/") == true) {
+                val prNumber = ref.split('/')[2].toInt()
+                println("Fetching GitHub PR by number: $prNumber")
+                repo!!.getPullRequest(prNumber)
+            } else {
+                repo!!.queryPullRequests().base(Git.baseBranch).head(Git.branch).list().firstOrNull()
             }
         }
 
@@ -82,6 +109,28 @@ class GitHub {
                         }
                         outFile.close()
                     }
+                }
+            }
+        }
+
+        fun addOrUpdateComment(commentBuilder: PrCommentBuilder) {
+            if (pullRequest == null) {
+                val file = File("out/comment.html")
+                println("No PR available (not running in CI?): writing built comment to ${file.absolutePath}")
+                file.writeText(commentBuilder.body)
+            } else {
+                val comments = pullRequest!!.comments
+                val author = github!!.myself.login
+                val comment = comments.firstOrNull {
+                    it.user.login.equals(author) &&
+                            it.body.startsWith(commentBuilder.title, ignoreCase = true)
+                }
+                if (comment != null) {
+                    println("Updating PR comment ${comment.htmlUrl} body")
+                    comment.update(comment.body)
+                } else {
+                    println("Adding new PR comment to ${pullRequest!!.htmlUrl}")
+                    pullRequest!!.comment(commentBuilder.body)
                 }
             }
         }
