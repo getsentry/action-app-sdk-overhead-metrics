@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1
+
+### Fixes
+
+* Don't fail on previous results download if an artifact is expired.
+
 ## 1.4.0
 
 ### Changes

@@ -84,6 +84,11 @@ class GitHub {
                 return
             }
 
+            if (artifact.isExpired) {
+                println("Couldn't download artifact ${artifact.name} - it has expired on ${artifact.expiresAt}")
+                return
+            }
+
             println("Downloading artifact ${artifact.archiveDownloadUrl} and extracting to $targetDir")
             artifact.download {
                 val zipStream = ZipInputStream(it)
