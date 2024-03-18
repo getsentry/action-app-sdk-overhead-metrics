@@ -8,7 +8,7 @@
 
 ### Dependencies
 
-* Update `action/checkout`, `action/setup-java` and `action/upload-artifact` to the latest versions due to Node14 deprecation.
+* Update `action/checkout`, `action/setup-java` and `action/upload-artifact` to the latest versions due to NodeJS 16 deprecation in actions.
 
 ## 1.4.1
 
