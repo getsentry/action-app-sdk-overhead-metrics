@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.5.0
+
+### Features
+
+* Improve log output for StartupTimeTest. ([#7](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/7))
+
+### Dependencies
+
+* Update `action/checkout`, `action/setup-java` and `action/upload-artifact` to the latest versions due to Node14 deprecation.
+
 ## 1.4.1
 
 ### Fixes
