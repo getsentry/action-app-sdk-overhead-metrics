@@ -55,6 +55,11 @@ gradle-app.setting
 ### AndroidStudio ###
 # Covers files to be ignored for android development using Android Studio.
 
+# Built application files
+*.apk
+*.ap_
+*.aab
+
 # Files for the ART/Dalvik VM
 *.dex
 
