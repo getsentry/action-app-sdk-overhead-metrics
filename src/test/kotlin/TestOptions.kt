@@ -93,7 +93,7 @@ data class TestOptions(
                 val otherAppsPaths = apps.map {
                     val fileId = SauceLabs.uploadApp(it)
                     val result = "storage:$fileId"
-                    logger.info("Adding app ${it.name} from ${it.path} to 'appium:otherApps' as '$result")
+                    logger.info("Adding app ${it.name} from ${it.path} to 'appium:otherApps' as '$result'")
                     result
                 }
 

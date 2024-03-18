@@ -161,8 +161,17 @@ class StartupTimeTest : TestBase() {
             val startupTime = when (baseOptions.platform) {
                 TestOptions.Platform.Android -> {
                     val androidDriver = (driver as AndroidDriver)
+                    printf("%s", "${app.name} is installed: ${driver.isAppInstalled(app.name)}")
+
                     // Note: there's also .activateApp() which should be OS independent, but doesn't seem to wait for the activity to start
-                    androidDriver.startActivity(Activity(app.name, app.activity))
+                    try {
+                        androidDriver.startActivity(Activity(app.name, app.activity))
+                    } catch (e: Exception) {
+                        // in case the app can't be launched or crashes on startup, print logcat output
+                        val logs = driver.manage().logs().get("logcat").all.joinToString("\n")
+                        printf("%s", logs)
+                        throw(e)
+                    }
                     androidDriver.terminateApp(app.name)
 
                     // Originally we used a code that loaded a list of executed Appium commands and used the time
