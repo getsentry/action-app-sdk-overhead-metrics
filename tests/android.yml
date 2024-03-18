@@ -1,11 +1,10 @@
 apps:
   - name: com.example.android.contactmanager
     activity: ContactManager
-    path: 'https://raw.githubusercontent.com/appium/appium-android-driver/master/test/assets/ContactManager.apk'
+    path: 'https://raw.githubusercontent.com/appium/appium-android-driver/a713100de8913fe395f347cb0131dd4620e24167/test/assets/ContactManager.apk'
   - name: com.saucelabs.mydemoapp.rn
     activity: MainActivity
     path: 'https://github.com/saucelabs/my-demo-app-rn/releases/download/v1.3.0/Android-MyDemoAppRN.1.3.0.build-244.apk'
-
 startupTimeTest:
   runs: 5
   diffMin: 0
