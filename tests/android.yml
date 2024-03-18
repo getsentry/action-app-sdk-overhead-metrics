@@ -1,16 +1,16 @@
 apps:
-  - name: com.example.android.contactmanager
-    activity: ContactManager
-    path: 'https://raw.githubusercontent.com/appium/appium-android-driver/master/test/assets/ContactManager.apk'
-  - name: com.saucelabs.mydemoapp.rn
+  - name: io.sentry.java.tests.perf.appplain
     activity: MainActivity
-    path: 'https://github.com/saucelabs/my-demo-app-rn/releases/download/v1.3.0/Android-MyDemoAppRN.1.3.0.build-244.apk'
+    path: './tests/test-app-plain-release.apk'
+  - name: io.sentry.java.tests.perf.appsentry
+    activity: MainActivity
+    path: './tests/test-app-sentry-release.apk'
 
 startupTimeTest:
   runs: 5
   diffMin: 0
-  diffMax: 1000
+  diffMax: 150
 
 binarySizeTest:
-  diffMin: 31.76 MiB
-  diffMax: 31.78 MiB
+  diffMin: 360 KiB
+  diffMax: 700 KiB
