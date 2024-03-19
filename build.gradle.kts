@@ -21,7 +21,7 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$ktorVersion")
     implementation("io.ktor:ktor-client-cio:$ktorVersion")
     implementation("io.ktor:ktor-client-auth:$ktorVersion")
-    implementation("org.kohsuke:github-api:1.308")
+    implementation("org.kohsuke:github-api:1.320")
 
     testImplementation(kotlin("test"))
     testImplementation(platform("org.junit:junit-bom:5.9.0"))
