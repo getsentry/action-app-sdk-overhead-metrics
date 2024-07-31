@@ -6,10 +6,6 @@
 
 * Update Appium version used in Sauce Labs from EOL `2.0.0` to `appium2-20240701` ([#13](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/13))
 
-### Dependencies
-
-* Update `action/checkout`, `action/setup-java` and `action/upload-artifact` to the latest versions due to NodeJS 16 deprecation in actions.
-
 ## 1.5.0
 
 ### Features
