@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0
+
+### Fixes
+
+* Update Appium version used in Sauce Labs from EOL `2.0.0` to `appium2-20240701` ([#13](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/13))
+
 ## 1.5.0
 
 ### Features
