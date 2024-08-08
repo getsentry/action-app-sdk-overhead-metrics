@@ -5,6 +5,7 @@
 ### Dependencies
 
 * Update Gradle version from 7.5.1 to 8.9 ([#16](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/16))
+* Update Java version from 11 to 17 ([#17](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/17))
 
 ## 1.6.0
 
