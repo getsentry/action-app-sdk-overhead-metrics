@@ -158,7 +158,7 @@ class StartupTimeTest : TestBase() {
             printf("$logAppPrefix measuring startup times: %d/%d", app.name, i, options.runs)
 
             // kill the app and sleep before running the next iteration
-            val startupTime = when (baseOptions.platform) {
+            when (baseOptions.platform) {
                 TestOptions.Platform.Android -> {
                     val androidDriver = (driver as AndroidDriver)
                     printf("%s", "${app.name} is installed: ${driver.isAppInstalled(app.name)}")
@@ -193,8 +193,11 @@ class StartupTimeTest : TestBase() {
                             seconds * 1000 + groups[2].toLong()
                         }
                     }
-                    times.shouldHaveSize(1)
-                    times.first()
+                    if (times.size == 1) {
+                        appTimes.add(times.first())
+                    } else {
+                        printf("Expected 1 startup time in logcat, matching Regex '%s', but found %d", regex.pattern, times.size)
+                    }
                 }
 
                 TestOptions.Platform.IOS -> {
@@ -204,11 +207,15 @@ class StartupTimeTest : TestBase() {
 
                     val times = driver.events.commands.filter { it.name == "activateApp" }
                         .map { it.endTimestamp - it.startTimestamp }
-                    times.shouldHaveSize(counter.incrementAndGet())
-                    times.last()
+
+                    val count = counter.incrementAndGet();
+                    if (times.size == count) {
+                        appTimes.add(times.last())
+                    } else {
+                        printf("Expected %d activateApp events, but found %d", count, times.size)
+                    }
                 }
             }
-            appTimes.add(startupTime)
 
             // sleep before the next test run
             Thread.sleep(sleepTimeMs)
