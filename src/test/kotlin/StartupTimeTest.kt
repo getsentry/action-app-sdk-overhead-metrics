@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
+import kotlin.math.ceil
 
 @Suppress("UnstableApiUsage")
 class StartupTimeTest : TestBase() {
