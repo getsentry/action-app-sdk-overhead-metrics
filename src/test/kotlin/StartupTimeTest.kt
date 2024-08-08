@@ -99,20 +99,19 @@ class StartupTimeTest : TestBase() {
         val measuredTimes = mutableListOf<List<Long>>()
 
         withDriver { driver ->
-            val appStartCounter = AtomicInteger(0) // needed for iOS time collection
             for (appIndex in apps.indices) {
                 val app = apps[appIndex]
                 val needsTimes = options.runs - ceil(options.runs * 0.1);
 
                 for (retry in 1..options.retries) {
+                    val appStartCounter = AtomicInteger(0) // needed for iOS time collection
                     if (retry > 1) {
                         printf(
                             "$logAppPrefix retrying startup time collection: %d/%d",
                             app.name,
-                            retry + 1,
+                            retry,
                             options.retries
                         )
-                        continue
                     }
 
                     // sleep before the first test to improve the first run time
