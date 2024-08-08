@@ -101,7 +101,7 @@ class StartupTimeTest : TestBase() {
         withDriver { driver ->
             for (appIndex in apps.indices) {
                 val app = apps[appIndex]
-                val needsTimes = options.runs - ceil(options.runs * 0.1);
+                val needsTimes = options.runs - ceil(options.runs * 0.1).toInt();
 
                 for (retry in 1..options.retries) {
                     val appStartCounter = AtomicInteger(0) // needed for iOS time collection
