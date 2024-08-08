@@ -1,3 +1,4 @@
+import com.google.common.collect.ImmutableMap
 import com.google.common.math.Quantiles
 import com.google.common.math.Stats
 import io.appium.java_client.AppiumDriver
@@ -165,14 +166,14 @@ class StartupTimeTest : TestBase() {
 
                     // Note: there's also .activateApp() which should be OS independent, but doesn't seem to wait for the activity to start
                     try {
-                        androidDriver.startActivity(Activity(app.name, app.activity))
+                        androidDriver.executeScript("mobile: startActivity", ImmutableMap.of("intent", app.activity!!));
                     } catch (e: Exception) {
                         // in case the app can't be launched or crashes on startup, print logcat output
                         val logs = driver.manage().logs().get("logcat").all.joinToString("\n")
                         printf("%s", logs)
                         throw(e)
                     }
-                    androidDriver.terminateApp(app.name)
+                    androidDriver.executeScript("mobile: terminateApp", ImmutableMap.of("appId", app.activity!!));
 
                     // Originally we used a code that loaded a list of executed Appium commands and used the time
                     // that the 'startActivity' command took. It seems like this time includes some overhead of the
