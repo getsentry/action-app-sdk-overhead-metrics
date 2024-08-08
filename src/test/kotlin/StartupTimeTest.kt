@@ -101,8 +101,19 @@ class StartupTimeTest : TestBase() {
             val appStartCounter = AtomicInteger(0) // needed for iOS time collection
             for (appIndex in apps.indices) {
                 val app = apps[appIndex]
+                val needsTimes = options.runs - ceil(options.runs * 0.1);
 
                 for (retry in 1..options.retries) {
+                    if (retry > 1) {
+                        printf(
+                            "$logAppPrefix retrying startup time collection: %d/%d",
+                            app.name,
+                            retry + 1,
+                            options.retries
+                        )
+                        continue
+                    }
+
                     // sleep before the first test to improve the first run time
                     Thread.sleep(1_000)
 
@@ -120,6 +131,17 @@ class StartupTimeTest : TestBase() {
                         retry,
                         options.retries
                     )
+
+                    if (appTimes.size == 0 || appTimes.size < needsTimes) {
+                        printf(
+                            "$logAppPrefix not enough startup times collected: %d/%d. Expected at least %d",
+                            app.name,
+                            appTimes.size,
+                            options.runs,
+                            needsTimes
+                        )
+                        continue
+                    }
                     appTimes.size.shouldBe(options.runs)
 
                     if (options.stdDevMax > 0) {
@@ -131,15 +153,7 @@ class StartupTimeTest : TestBase() {
                                 stdDev,
                                 options.stdDevMax.toDouble()
                             )
-                            if (retry < options.retries) {
-                                printf(
-                                    "$logAppPrefix retrying startup time collection: %d/%d",
-                                    app.name,
-                                    retry + 1,
-                                    options.retries
-                                )
-                                continue
-                            }
+                            continue
                         }
                     }
 
