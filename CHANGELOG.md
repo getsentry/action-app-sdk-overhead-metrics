@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Features
+
+* Graceful handling of individual failed startup-time tests, when the startup time couldn't be read from the device in less than 10 % of runs. ([#13](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/13))
+
 ### Dependencies
 
 * Update Gradle version from `7.5.1` to `8.9` ([#16](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/16))

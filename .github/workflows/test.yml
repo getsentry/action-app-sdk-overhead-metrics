@@ -16,6 +16,7 @@ jobs:
           config: tests/android.yml
           sauce-user: ${{ secrets.SAUCE_USERNAME }}
           sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
+          _runs: '10' # Run multiple times to improve our chances of catching flaky tests
 
   ios:
     runs-on: ubuntu-latest
@@ -27,3 +28,4 @@ jobs:
           config: tests/ios.yml
           sauce-user: ${{ secrets.SAUCE_USERNAME }}
           sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
+          _runs: '10' # Run multiple times to improve our chances of catching flaky tests
