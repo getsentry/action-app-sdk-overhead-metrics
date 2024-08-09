@@ -198,7 +198,8 @@ class StartupTimeTest : TestBase() {
                     val iosDriver = (driver as IOSDriver)
                     iosDriver.activateApp(app.name)
                     iosDriver.terminateApp(app.name)
-
+                    // XXX
+                    print(driver.events)
                     val times = driver.events.commands.filter { it.name == "activateApp" }
                         .map { it.endTimestamp - it.startTimestamp }
                     times.shouldHaveSize(counter.incrementAndGet())
