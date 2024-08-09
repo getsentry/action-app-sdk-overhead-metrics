@@ -162,7 +162,6 @@ class StartupTimeTest : TestBase() {
                     val androidDriver = (driver as AndroidDriver)
                     printf("%s", "${app.name} is installed: ${driver.isAppInstalled(app.name)}")
 
-                    // Note: there's also .activateApp() which should be OS independent, but doesn't seem to wait for the activity to start
                     try {
                         val result = androidDriver.executeScript("mobile: startActivity",
                             ImmutableMap.of("intent", "${app.name}/.${app.activity!!}", "wait", true)).toString()
@@ -177,15 +176,8 @@ class StartupTimeTest : TestBase() {
                         throw(e)
                     }
 
-                    androidDriver.executeScript("mobile: terminateApp", ImmutableMap.of("appId", app.name)).shouldBe(true)
+                    androidDriver.terminateApp(app.name).shouldBe(true)
 
-                    // Originally we used a code that loaded a list of executed Appium commands and used the time
-                    // that the 'startActivity' command took. It seems like this time includes some overhead of the
-                    // Appium controller because the times were about 900 ms, while the time reported in logcat
-                    // was `ActivityManager: Displayed io.../.MainActivity: +276ms` or `... +1s40ms`
-                    //   val times = driver.events.commands.filter { it.name == "startActivity" } .map { it.endTimestamp - it.startTimestamp }
-                    //   val offset = j * runs
-                    //   times.subList(offset, offset + runs)
                     val logEntries = driver.manage().logs().get("logcat")
                     val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
                     val times = logEntries.mapNotNull {
