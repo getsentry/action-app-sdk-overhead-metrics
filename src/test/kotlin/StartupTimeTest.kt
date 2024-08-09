@@ -2,7 +2,6 @@ import com.google.common.collect.ImmutableMap
 import com.google.common.math.Quantiles
 import com.google.common.math.Stats
 import io.appium.java_client.AppiumDriver
-import io.appium.java_client.android.Activity
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import io.kotest.matchers.collections.shouldHaveSize
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 
-@Suppress("UnstableApiUsage")
 class StartupTimeTest : TestBase() {
     data class Options(
         val runs: Int, val diffMax: Int?, val diffMin: Int = 1, val stdDevMax: Int = 50, val retries: Int = 5
@@ -166,14 +164,20 @@ class StartupTimeTest : TestBase() {
 
                     // Note: there's also .activateApp() which should be OS independent, but doesn't seem to wait for the activity to start
                     try {
-                        androidDriver.executeScript("mobile: startActivity", ImmutableMap.of("intent", app.activity!!));
+                        val result = androidDriver.executeScript("mobile: startActivity",
+                            ImmutableMap.of("intent", "${app.name}/.${app.activity!!}", "wait", true)).toString()
+                        val error = Regex("Error: (.*)").find(result)?.groupValues
+                        if (error != null) {
+                            throw Exception(error[0])
+                        }
                     } catch (e: Exception) {
                         // in case the app can't be launched or crashes on startup, print logcat output
                         val logs = driver.manage().logs().get("logcat").all.joinToString("\n")
                         printf("%s", logs)
                         throw(e)
                     }
-                    androidDriver.executeScript("mobile: terminateApp", ImmutableMap.of("appId", app.activity!!));
+
+                    androidDriver.executeScript("mobile: terminateApp", ImmutableMap.of("appId", app.name)).shouldBe(true)
 
                     // Originally we used a code that loaded a list of executed Appium commands and used the time
                     // that the 'startActivity' command took. It seems like this time includes some overhead of the
