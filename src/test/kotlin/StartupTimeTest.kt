@@ -196,9 +196,12 @@ class StartupTimeTest : TestBase() {
 
                 TestOptions.Platform.IOS -> {
                     val iosDriver = (driver as IOSDriver)
+                    val result = driver.executeScript("mobile: startActivity",
+                        ImmutableMap.of("bundleId", app.name, "wait", true)).toString()
                     iosDriver.activateApp(app.name)
                     iosDriver.terminateApp(app.name)
                     // XXX
+                    print(result)
                     print(driver.events)
                     val times = driver.events.commands.filter { it.name == "activateApp" }
                         .map { it.endTimestamp - it.startTimestamp }
