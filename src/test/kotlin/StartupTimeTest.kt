@@ -196,14 +196,14 @@ class StartupTimeTest : TestBase() {
 
                 TestOptions.Platform.IOS -> {
                     val iosDriver = (driver as IOSDriver)
-                    print(driver.events)
                     iosDriver.activateApp(app.name)
-                    print(driver.events)
-                    iosDriver.terminateApp(app.name)
-                    print(driver.events)
-                    val times = driver.events.commands.filter { it.name == "activateApp" }
+                    // Note: with Appium 9 we can no longer filter by actual command name, see https://github.com/appium/java-client/issues/2219
+                    val times = driver.events.commands
+                        .filter { it.name == "execute" }
                         .map { it.endTimestamp - it.startTimestamp }
                     times.shouldHaveSize(counter.incrementAndGet())
+                    iosDriver.terminateApp(app.name)
+                    counter.incrementAndGet()
                     times.last()
                 }
             }
