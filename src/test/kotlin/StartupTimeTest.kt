@@ -195,12 +195,17 @@ class StartupTimeTest : TestBase() {
                 }
 
                 TestOptions.Platform.IOS -> {
-                    val iosDriver = (driver as IOSDriver)
-                    print(driver.events)
-                    iosDriver.activateApp(app.name)
-                    print(driver.events)
-                    iosDriver.terminateApp(app.name)
-                    print(driver.events)
+                    (driver as IOSDriver).terminateApp(app.name)
+
+                    // Consume (clear) log up to this point:
+                    driver.manage().logs().get("syslog")
+
+                    driver.executeScript("mobile:launchApp", ImmutableMap.of(
+                        "bundleId", app.name,
+                        "environment", ImmutableMap.of("DYLD_PRINT_APIS", "1", "DYLD_PRINT_STATISTICS", "1")
+                    ));
+                    val logItems = driver.manage().logs().get("syslog").all
+                    print(logItems)
                     val times = driver.events.commands.filter { it.name == "activateApp" }
                         .map { it.endTimestamp - it.startTimestamp }
                     times.shouldHaveSize(counter.incrementAndGet())
