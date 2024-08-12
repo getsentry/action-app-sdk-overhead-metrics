@@ -1,8 +1,9 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 
 plugins {
-    kotlin("jvm") version "1.7.10"
+    kotlin("jvm")
     application
 }
 
@@ -13,27 +14,25 @@ repositories {
     mavenCentral()
 }
 
-val ktorVersion = "2.1.0"
-val hopliteVersion = "2.6.2"
 dependencies {
-    implementation("org.apache.commons:commons-configuration2:2.8.0")
-    implementation("commons-beanutils:commons-beanutils:1.9.4")
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-auth:$ktorVersion")
-    implementation("org.kohsuke:github-api:1.320")
+    implementation("org.apache.commons:commons-configuration2:_")
+    implementation("commons-beanutils:commons-beanutils:_")
+    implementation(Ktor.client.core)
+    implementation(Ktor.client.cio)
+    implementation(Ktor.client.auth)
+    implementation("org.kohsuke:github-api:_")
 
     testImplementation(kotlin("test"))
-    testImplementation(platform("org.junit:junit-bom:5.9.0"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("io.appium:java-client:8.1.1")
-    testImplementation("io.kotest:kotest-assertions-core:5.4.2")
-    testImplementation("com.google.guava:guava:31.1-jre")
-    testImplementation("com.jayway.jsonpath:json-path:2.7.0")
-    testImplementation("org.slf4j:slf4j-jdk14:2.0.0")
-    testImplementation("com.sksamuel.hoplite:hoplite-core:$hopliteVersion")
-    testImplementation("com.sksamuel.hoplite:hoplite-hocon:$hopliteVersion")
-    testImplementation("com.sksamuel.hoplite:hoplite-yaml:$hopliteVersion")
+    testImplementation(platform(Testing.junit.bom))
+    testImplementation(Testing.junit.jupiter)
+    testImplementation("io.appium:java-client:_")
+    testImplementation(Testing.kotest.assertions.core)
+    testImplementation("com.google.guava:guava:_")
+    testImplementation("com.jayway.jsonpath:json-path:_")
+    testImplementation("org.slf4j:slf4j-jdk14:_")
+    testImplementation("com.sksamuel.hoplite:hoplite-core:_")
+    testImplementation("com.sksamuel.hoplite:hoplite-hocon:_")
+    testImplementation("com.sksamuel.hoplite:hoplite-yaml:_")
 }
 
 tasks.test {
@@ -48,8 +47,10 @@ tasks.test {
     }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_11.toString()
+tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
+    }
 }
 
 application {

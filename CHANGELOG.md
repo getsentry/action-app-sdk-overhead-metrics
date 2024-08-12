@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Dependencies
+
+* Update Gradle version from `7.5.1` to `8.9` ([#16](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/16))
+* Update Java version from `11` to `17` ([#17](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/17))
+* Update Kotlin version from `1.7.10` to `2.0.10` ([#18](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/18))
+* Update internal dependencies ([#20](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/20))
+
 ## 1.6.0
 
 ### Fixes
