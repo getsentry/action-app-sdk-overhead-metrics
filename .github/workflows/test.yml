@@ -22,3 +22,15 @@ jobs:
           sauce-user: ${{ secrets.SAUCE_USERNAME }}
           sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
           artifact-suffix: -${{ matrix.run }}
+
+  no-suffix:
+    runs-on: ubuntu-latest
+    name: no-suffix test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          name: android
+          config: tests/android.yml
+          sauce-user: ${{ secrets.SAUCE_USERNAME }}
+          sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
