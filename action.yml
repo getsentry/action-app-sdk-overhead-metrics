@@ -38,7 +38,7 @@ runs:
     - name: Run tests
       run: |
         for i in $(seq 1 ${{ inputs._runs }}); do
-          ./gradlew :test
+          ./gradlew :test --rerun
         done
       shell: bash
       working-directory: ${{ github.action_path }}
