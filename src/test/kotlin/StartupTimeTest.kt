@@ -98,7 +98,6 @@ class StartupTimeTest : TestBase() {
         val measuredTimes = mutableListOf<List<Long>>()
 
         withDriver { driver ->
-            val appStartCounter = AtomicInteger(0) // needed for iOS time collection
             for (appIndex in apps.indices) {
                 val app = apps[appIndex]
                 val needsTimes = options.runs - ceil(options.runs * 0.1).toInt();
@@ -121,7 +120,7 @@ class StartupTimeTest : TestBase() {
                         driver.manage().logs().get("logcat")
                     }
 
-                    val appTimes = collectAppStartupTimes(app, driver, appStartCounter)
+                    val appTimes = collectAppStartupTimes(app, driver)
                     printf(
                         "$logAppPrefix collected %d/%d startup times (try %d/%d)",
                         app.name,
@@ -165,7 +164,7 @@ class StartupTimeTest : TestBase() {
         return measuredTimes
     }
 
-    private fun collectAppStartupTimes(app: AppInfo, driver: AppiumDriver, counter: AtomicInteger): MutableList<Long> {
+    private fun collectAppStartupTimes(app: AppInfo, driver: AppiumDriver): MutableList<Long> {
         val appTimes = mutableListOf<Long>()
         for (i in 1..options.runs) {
             printf("$logAppPrefix measuring startup times: %d/%d", app.name, i, options.runs)
@@ -213,22 +212,21 @@ class StartupTimeTest : TestBase() {
 
                 TestOptions.Platform.IOS -> {
                     val iosDriver = (driver as IOSDriver)
+                    val countBefore = driver.events.commands.filter { it.name == "execute" }.count()
                     iosDriver.activateApp(app.name)
                     // Note: with Appium 9 we can no longer filter by actual command name, see https://github.com/appium/java-client/issues/2219
                     val times = driver.events.commands
                         .filter { it.name == "execute" }
                         .map { it.endTimestamp - it.startTimestamp }
 
-                    val count = counter.incrementAndGet();
-                    if (times.size == count) {
+
+                    if (times.size == countBefore + 1) {
                         appTimes.add(times.last())
                     } else {
-                        printf("Expected %d activateApp events, but found %d", count, times.size)
+                        printf("Expected %d activateApp events, but found %d", countBefore + 1, times.size)
                     }
-                    
+
                     iosDriver.terminateApp(app.name)
-                    counter.incrementAndGet()
-                    times.last()
                 }
             }
             appTimes.add(startupTime)
