@@ -9,6 +9,7 @@ startupTimeTest:
   runs: 15
   diffMin: 0
   diffMax: 2000
+  stdDevMax: 100
 
 binarySizeTest:
   diffMin: 31.76 MiB
