@@ -4,14 +4,13 @@ import com.google.common.math.Stats
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
+import kotlin.math.ceil
 
 class StartupTimeTest : TestBase() {
     data class Options(
@@ -97,11 +96,20 @@ class StartupTimeTest : TestBase() {
         val measuredTimes = mutableListOf<List<Long>>()
 
         withDriver { driver ->
-            val appStartCounter = AtomicInteger(0) // needed for iOS time collection
             for (appIndex in apps.indices) {
                 val app = apps[appIndex]
+                val needsTimes = options.runs - ceil(options.runs * 0.1).toInt()
 
                 for (retry in 1..options.retries) {
+                    if (retry > 1) {
+                        printf(
+                            "$logAppPrefix retrying startup time collection: %d/%d",
+                            app.name,
+                            retry,
+                            options.retries
+                        )
+                    }
+
                     // sleep before the first test to improve the first run time
                     Thread.sleep(1_000)
 
@@ -110,7 +118,7 @@ class StartupTimeTest : TestBase() {
                         driver.manage().logs().get("logcat")
                     }
 
-                    val appTimes = collectAppStartupTimes(app, driver, appStartCounter)
+                    val appTimes = collectAppStartupTimes(app, driver)
                     printf(
                         "$logAppPrefix collected %d/%d startup times (try %d/%d)",
                         app.name,
@@ -119,6 +127,17 @@ class StartupTimeTest : TestBase() {
                         retry,
                         options.retries
                     )
+
+                    if (appTimes.size == 0 || appTimes.size < needsTimes) {
+                        printf(
+                            "$logAppPrefix not enough startup times collected: %d/%d. Expected at least %d",
+                            app.name,
+                            appTimes.size,
+                            options.runs,
+                            needsTimes
+                        )
+                        continue
+                    }
                     appTimes.size.shouldBe(options.runs)
 
                     if (options.stdDevMax > 0) {
@@ -130,15 +149,7 @@ class StartupTimeTest : TestBase() {
                                 stdDev,
                                 options.stdDevMax.toDouble()
                             )
-                            if (retry < options.retries) {
-                                printf(
-                                    "$logAppPrefix retrying startup time collection: %d/%d",
-                                    app.name,
-                                    retry + 1,
-                                    options.retries
-                                )
-                                continue
-                            }
+                            continue
                         }
                     }
 
@@ -151,13 +162,13 @@ class StartupTimeTest : TestBase() {
         return measuredTimes
     }
 
-    private fun collectAppStartupTimes(app: AppInfo, driver: AppiumDriver, counter: AtomicInteger): MutableList<Long> {
+    private fun collectAppStartupTimes(app: AppInfo, driver: AppiumDriver): MutableList<Long> {
         val appTimes = mutableListOf<Long>()
         for (i in 1..options.runs) {
             printf("$logAppPrefix measuring startup times: %d/%d", app.name, i, options.runs)
 
             // kill the app and sleep before running the next iteration
-            val startupTime = when (baseOptions.platform) {
+            when (baseOptions.platform) {
                 TestOptions.Platform.Android -> {
                     val androidDriver = (driver as AndroidDriver)
                     printf("%s", "${app.name} is installed: ${driver.isAppInstalled(app.name)}")
@@ -190,24 +201,32 @@ class StartupTimeTest : TestBase() {
                             seconds * 1000 + groups[2].toLong()
                         }
                     }
-                    times.shouldHaveSize(1)
-                    times.first()
+                    if (times.size == 1) {
+                        appTimes.add(times.first())
+                    } else {
+                        printf("Expected 1 startup time in logcat, matching Regex '%s', but found %d", regex.pattern, times.size)
+                    }
                 }
 
                 TestOptions.Platform.IOS -> {
                     val iosDriver = (driver as IOSDriver)
+                    val countBefore = driver.events.commands.filter { it.name == "execute" }.count()
                     iosDriver.activateApp(app.name)
                     // Note: with Appium 9 we can no longer filter by actual command name, see https://github.com/appium/java-client/issues/2219
                     val times = driver.events.commands
                         .filter { it.name == "execute" }
                         .map { it.endTimestamp - it.startTimestamp }
-                    times.shouldHaveSize(counter.incrementAndGet())
+
+
+                    if (times.size == countBefore + 1) {
+                        appTimes.add(times.last())
+                    } else {
+                        printf("Expected %d activateApp events, but found %d", countBefore + 1, times.size)
+                    }
+
                     iosDriver.terminateApp(app.name)
-                    counter.incrementAndGet()
-                    times.last()
                 }
             }
-            appTimes.add(startupTime)
 
             // sleep before the next test run
             Thread.sleep(sleepTimeMs)
