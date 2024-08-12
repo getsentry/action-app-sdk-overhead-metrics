@@ -4,13 +4,11 @@ import com.google.common.math.Stats
 import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
-import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
-import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 import kotlin.math.ceil
 
@@ -100,7 +98,7 @@ class StartupTimeTest : TestBase() {
         withDriver { driver ->
             for (appIndex in apps.indices) {
                 val app = apps[appIndex]
-                val needsTimes = options.runs - ceil(options.runs * 0.1).toInt();
+                val needsTimes = options.runs - ceil(options.runs * 0.1).toInt()
 
                 for (retry in 1..options.retries) {
                     if (retry > 1) {
@@ -229,7 +227,6 @@ class StartupTimeTest : TestBase() {
                     iosDriver.terminateApp(app.name)
                 }
             }
-            appTimes.add(startupTime)
 
             // sleep before the next test run
             Thread.sleep(sleepTimeMs)
