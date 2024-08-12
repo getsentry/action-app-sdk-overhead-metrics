@@ -17,10 +17,6 @@ inputs:
   sauce-key:
     description: SauceLabs access key
     required: true
-  _runs:
-    description: Internal - how many times to execut the test
-    required: false
-    default: '1'
 
 runs:
   using: 'composite'
@@ -36,10 +32,7 @@ runs:
         java-version: '17'
 
     - name: Run tests
-      run: |
-        for i in $(seq 1 ${{ inputs._runs }}); do
-          ./gradlew :test --rerun
-        done
+      run: ./gradlew :test
       shell: bash
       working-directory: ${{ github.action_path }}
       env:

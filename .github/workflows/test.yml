@@ -6,26 +6,18 @@ on:
   pull_request:
 
 jobs:
-  android:
+  test:
+    strategy:
+      matrix:
+        os: [android, ios]
+        run: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
     runs-on: ubuntu-latest
+    name: ${{ matrix.os }} ${{ matrix.run }}/10
     steps:
       - uses: actions/checkout@v4
       - uses: ./
         with:
-          name: android
-          config: tests/android.yml
+          name: ${{ matrix.os }}
+          config: tests/${{ matrix.os }}.yml
           sauce-user: ${{ secrets.SAUCE_USERNAME }}
           sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
-          _runs: '10' # Run multiple times to improve our chances of catching flaky tests
-
-  ios:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./
-        with:
-          name: ios
-          config: tests/ios.yml
-          sauce-user: ${{ secrets.SAUCE_USERNAME }}
-          sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
-          _runs: '10' # Run multiple times to improve our chances of catching flaky tests
