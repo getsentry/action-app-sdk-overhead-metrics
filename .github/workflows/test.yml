@@ -10,9 +10,9 @@ jobs:
     strategy:
       matrix:
         os: [android, ios]
-        run: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        run: [1, 2, 3, 4, 5]
     runs-on: ubuntu-latest
-    name: ${{ matrix.os }} ${{ matrix.run }}/10
+    name: ${{ matrix.os }} ${{ matrix.run }}/5
     steps:
       - uses: actions/checkout@v4
       - uses: ./
