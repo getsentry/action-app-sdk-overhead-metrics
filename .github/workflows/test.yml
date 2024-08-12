@@ -6,24 +6,31 @@ on:
   pull_request:
 
 jobs:
-  android:
+  test:
+    strategy:
+      matrix:
+        os: [android, ios]
+        run: [1, 2, 3, 4, 5]
     runs-on: ubuntu-latest
+    name: ${{ matrix.os }} ${{ matrix.run }}/5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          name: ${{ matrix.os }}
+          config: tests/${{ matrix.os }}.yml
+          sauce-user: ${{ secrets.SAUCE_USERNAME }}
+          sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
+          artifact-suffix: -${{ matrix.run }}
+
+  no-suffix:
+    runs-on: ubuntu-latest
+    name: no-suffix test
     steps:
       - uses: actions/checkout@v4
       - uses: ./
         with:
           name: android
           config: tests/android.yml
-          sauce-user: ${{ secrets.SAUCE_USERNAME }}
-          sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
-
-  ios:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./
-        with:
-          name: ios
-          config: tests/ios.yml
           sauce-user: ${{ secrets.SAUCE_USERNAME }}
           sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}

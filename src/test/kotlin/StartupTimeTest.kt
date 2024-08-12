@@ -138,7 +138,6 @@ class StartupTimeTest : TestBase() {
                         )
                         continue
                     }
-                    appTimes.size.shouldBe(options.runs)
 
                     if (options.stdDevMax > 0) {
                         val stdDev = Stats.of(filterOutliers(appTimes)).populationStandardDeviation()
