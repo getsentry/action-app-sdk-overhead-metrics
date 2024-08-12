@@ -21,3 +21,4 @@ jobs:
           config: tests/${{ matrix.os }}.yml
           sauce-user: ${{ secrets.SAUCE_USERNAME }}
           sauce-key: ${{ secrets.SAUCE_ACCESS_KEY }}
+          artifact-suffix: -${{ matrix.run }}

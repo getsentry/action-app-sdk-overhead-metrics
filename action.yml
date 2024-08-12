@@ -17,6 +17,9 @@ inputs:
   sauce-key:
     description: SauceLabs access key
     required: true
+  artifact-suffix:
+    description: Artifact identifier, if the action is run multiple times in the same workflow.
+    default: ''
 
 runs:
   using: 'composite'
@@ -53,5 +56,5 @@ runs:
     - name: Upload test results
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ steps.process.outputs.artifactName }}
-        path: ${{ steps.process.outputs.artifactPath }}
+        name: ${{ steps.process.outputs.artifactName }}${{ inputs.artifact-suffix }}
+        path: ${{ steps.process.outputs.artifactPath }}${{ inputs.artifact-suffix }}
