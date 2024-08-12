@@ -1,7 +1,7 @@
+import com.google.common.collect.ImmutableMap
 import com.google.common.math.Quantiles
 import com.google.common.math.Stats
 import io.appium.java_client.AppiumDriver
-import io.appium.java_client.android.Activity
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import io.kotest.matchers.collections.shouldHaveSize
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
 
-@Suppress("UnstableApiUsage")
 class StartupTimeTest : TestBase() {
     data class Options(
         val runs: Int, val diffMax: Int?, val diffMin: Int = 1, val stdDevMax: Int = 50, val retries: Int = 5
@@ -163,24 +162,22 @@ class StartupTimeTest : TestBase() {
                     val androidDriver = (driver as AndroidDriver)
                     printf("%s", "${app.name} is installed: ${driver.isAppInstalled(app.name)}")
 
-                    // Note: there's also .activateApp() which should be OS independent, but doesn't seem to wait for the activity to start
                     try {
-                        androidDriver.startActivity(Activity(app.name, app.activity))
+                        val result = androidDriver.executeScript("mobile: startActivity",
+                            ImmutableMap.of("intent", "${app.name}/.${app.activity!!}", "wait", true)).toString()
+                        val error = Regex("Error: (.*)").find(result)?.groupValues
+                        if (error != null) {
+                            throw Exception(error[0])
+                        }
                     } catch (e: Exception) {
                         // in case the app can't be launched or crashes on startup, print logcat output
                         val logs = driver.manage().logs().get("logcat").all.joinToString("\n")
                         printf("%s", logs)
                         throw(e)
                     }
-                    androidDriver.terminateApp(app.name)
 
-                    // Originally we used a code that loaded a list of executed Appium commands and used the time
-                    // that the 'startActivity' command took. It seems like this time includes some overhead of the
-                    // Appium controller because the times were about 900 ms, while the time reported in logcat
-                    // was `ActivityManager: Displayed io.../.MainActivity: +276ms` or `... +1s40ms`
-                    //   val times = driver.events.commands.filter { it.name == "startActivity" } .map { it.endTimestamp - it.startTimestamp }
-                    //   val offset = j * runs
-                    //   times.subList(offset, offset + runs)
+                    androidDriver.terminateApp(app.name).shouldBe(true)
+
                     val logEntries = driver.manage().logs().get("logcat")
                     val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
                     val times = logEntries.mapNotNull {
@@ -200,11 +197,13 @@ class StartupTimeTest : TestBase() {
                 TestOptions.Platform.IOS -> {
                     val iosDriver = (driver as IOSDriver)
                     iosDriver.activateApp(app.name)
-                    iosDriver.terminateApp(app.name)
-
-                    val times = driver.events.commands.filter { it.name == "activateApp" }
+                    // Note: with Appium 9 we can no longer filter by actual command name, see https://github.com/appium/java-client/issues/2219
+                    val times = driver.events.commands
+                        .filter { it.name == "execute" }
                         .map { it.endTimestamp - it.startTimestamp }
                     times.shouldHaveSize(counter.incrementAndGet())
+                    iosDriver.terminateApp(app.name)
+                    counter.incrementAndGet()
                     times.last()
                 }
             }
