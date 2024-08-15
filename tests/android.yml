@@ -6,7 +6,7 @@ apps:
     activity: MainActivity
     path: 'https://github.com/saucelabs/my-demo-app-rn/releases/download/v1.3.0/Android-MyDemoAppRN.1.3.0.build-244.apk'
 startupTimeTest:
-  runs: 15
+  runs: 100
   diffMin: 0
   diffMax: 2000
   stdDevMax: 100
