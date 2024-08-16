@@ -39,7 +39,11 @@ class StartupTimeTest : TestBase() {
     fun `startup time`() {
         Assumptions.assumeTrue(baseOptions.startupTimeTest != null)
 
-        val measuredTimes = collectStartupTimes()
+        val measuredTimes = try {
+            collectStartupTimes()
+        } finally {
+            resetDriver()
+        }
         val filteredTimes = mutableListOf<List<Long>>()
 
         for (j in apps.indices) {
@@ -95,66 +99,69 @@ class StartupTimeTest : TestBase() {
     private fun collectStartupTimes(): List<List<Long>> {
         val measuredTimes = mutableListOf<List<Long>>()
 
-        withDriver { driver ->
-            for (appIndex in apps.indices) {
-                val app = apps[appIndex]
-                val needsTimes = options.runs - ceil(options.runs * 0.1).toInt()
+        for (appIndex in apps.indices) {
+            val app = apps[appIndex]
+            val needsTimes = options.runs - ceil(options.runs * 0.1).toInt()
 
-                for (retry in 1..options.retries) {
-                    if (retry > 1) {
-                        printf(
-                            "$logAppPrefix retrying startup time collection: %d/%d",
-                            app.name,
-                            retry,
-                            options.retries
-                        )
-                    }
-
-                    // sleep before the first test to improve the first run time
-                    Thread.sleep(1_000)
-
-                    // clear logcat before test runs
-                    if (baseOptions.platform == TestOptions.Platform.Android) {
-                        driver.manage().logs().get("logcat")
-                    }
-
-                    val appTimes = collectAppStartupTimes(app, driver)
+            for (retry in 1..options.retries) {
+                if (retry > 1) {
                     printf(
-                        "$logAppPrefix collected %d/%d startup times (try %d/%d)",
+                        "$logAppPrefix retrying startup time collection: %d/%d",
                         app.name,
-                        appTimes.size,
-                        options.runs,
                         retry,
                         options.retries
                     )
+                }
 
-                    if (appTimes.size == 0 || appTimes.size < needsTimes) {
+                // sleep before the first test to improve the first run time
+                Thread.sleep(1_000)
+
+                val appTimes = try {
+                    withDriver { collectAppStartupTimes(app, it) }
+                } catch (e: Exception) {
+                    printf(
+                        "$logAppPrefix startup time collection failed with %s",
+                        app.name,
+                        e.toString()
+                    )
+                    continue
+                }
+
+                printf(
+                    "$logAppPrefix collected %d/%d startup times (try %d/%d)",
+                    app.name,
+                    appTimes.size,
+                    options.runs,
+                    retry,
+                    options.retries
+                )
+
+                if (appTimes.size == 0 || appTimes.size < needsTimes) {
+                    printf(
+                        "$logAppPrefix not enough startup times collected: %d/%d. Expected at least %d",
+                        app.name,
+                        appTimes.size,
+                        options.runs,
+                        needsTimes
+                    )
+                    continue
+                }
+
+                if (options.stdDevMax > 0) {
+                    val stdDev = Stats.of(filterOutliers(appTimes)).populationStandardDeviation()
+                    if (stdDev > options.stdDevMax.toDouble()) {
                         printf(
-                            "$logAppPrefix not enough startup times collected: %d/%d. Expected at least %d",
+                            "$logAppPrefix stddev on the filtered startup-time list is too high: %.2f, expected %.2f at most.",
                             app.name,
-                            appTimes.size,
-                            options.runs,
-                            needsTimes
+                            stdDev,
+                            options.stdDevMax.toDouble()
                         )
                         continue
                     }
-
-                    if (options.stdDevMax > 0) {
-                        val stdDev = Stats.of(filterOutliers(appTimes)).populationStandardDeviation()
-                        if (stdDev > options.stdDevMax.toDouble()) {
-                            printf(
-                                "$logAppPrefix stddev on the filtered startup-time list is too high: %.2f, expected %.2f at most.",
-                                app.name,
-                                stdDev,
-                                options.stdDevMax.toDouble()
-                            )
-                            continue
-                        }
-                    }
-
-                    measuredTimes.add(appTimes)
-                    break
                 }
+
+                measuredTimes.add(appTimes)
+                break
             }
         }
 
@@ -162,6 +169,11 @@ class StartupTimeTest : TestBase() {
     }
 
     private fun collectAppStartupTimes(app: AppInfo, driver: AppiumDriver): MutableList<Long> {
+        // clear logcat before test runs
+        if (baseOptions.platform == TestOptions.Platform.Android) {
+            driver.manage().logs().get("logcat")
+        }
+
         val appTimes = mutableListOf<Long>()
         for (i in 1..options.runs) {
             printf("$logAppPrefix measuring startup times: %d/%d", app.name, i, options.runs)
