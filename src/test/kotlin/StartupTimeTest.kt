@@ -42,7 +42,7 @@ class StartupTimeTest : TestBase() {
         val measuredTimes = try {
             collectStartupTimes()
         } finally {
-            resetDriver()
+            closeDriver()
         }
         val filteredTimes = mutableListOf<List<Long>>()
 
@@ -116,17 +116,7 @@ class StartupTimeTest : TestBase() {
                 // sleep before the first test to improve the first run time
                 Thread.sleep(1_000)
 
-                val appTimes = try {
-                    withDriver { collectAppStartupTimes(app, it) }
-                } catch (e: Exception) {
-                    printf(
-                        "$logAppPrefix startup time collection failed with %s",
-                        app.name,
-                        e.toString()
-                    )
-                    continue
-                }
-
+                val appTimes = collectAppStartupTimes(app)
                 printf(
                     "$logAppPrefix collected %d/%d startup times (try %d/%d)",
                     app.name,
@@ -168,80 +158,103 @@ class StartupTimeTest : TestBase() {
         return measuredTimes
     }
 
-    private fun collectAppStartupTimes(app: AppInfo, driver: AppiumDriver): MutableList<Long> {
+    private fun collectAppStartupTimes(app: AppInfo): MutableList<Long> {
         // clear logcat before test runs
         if (baseOptions.platform == TestOptions.Platform.Android) {
-            driver.manage().logs().get("logcat")
+            withDriver { it.manage().logs().get("logcat") }
         }
 
         val appTimes = mutableListOf<Long>()
         for (i in 1..options.runs) {
-            printf("$logAppPrefix measuring startup times: %d/%d", app.name, i, options.runs)
+            try {
+                withDriver { driver ->
+                    printf("$logAppPrefix measuring startup times: %d/%d", app.name, i, options.runs)
 
-            // kill the app and sleep before running the next iteration
-            when (baseOptions.platform) {
-                TestOptions.Platform.Android -> {
-                    val androidDriver = (driver as AndroidDriver)
-                    printf("%s", "${app.name} is installed: ${driver.isAppInstalled(app.name)}")
+                    collectAppStartupTime(driver, app, appTimes)
 
-                    try {
-                        val result = androidDriver.executeScript("mobile: startActivity",
-                            ImmutableMap.of("intent", "${app.name}/.${app.activity!!}", "wait", true)).toString()
-                        val error = Regex("Error: (.*)").find(result)?.groupValues
-                        if (error != null) {
-                            throw Exception(error[0])
-                        }
-                    } catch (e: Exception) {
-                        // in case the app can't be launched or crashes on startup, print logcat output
-                        val logs = driver.manage().logs().get("logcat").all.joinToString("\n")
-                        printf("%s", logs)
-                        throw(e)
+                    // sleep before running the next iteration
+                    Thread.sleep(sleepTimeMs)
+                }
+            } catch (e: Exception) {
+                printf(
+                    "$logAppPrefix startup time collection failed with %s",
+                    app.name,
+                    e.toString()
+                )
+                continue
+            }
+
+        }
+        return appTimes
+    }
+
+    private fun collectAppStartupTime(
+        driver: AppiumDriver,
+        app: AppInfo,
+        appTimes: MutableList<Long>
+    ) {
+        when (baseOptions.platform) {
+            TestOptions.Platform.Android -> {
+                val androidDriver = (driver as AndroidDriver)
+                printf("%s", "${app.name} is installed: ${driver.isAppInstalled(app.name)}")
+                driver.terminateApp(app.name)
+
+                try {
+                    val result = androidDriver.executeScript(
+                        "mobile: startActivity",
+                        ImmutableMap.of("intent", "${app.name}/.${app.activity!!}", "wait", true)
+                    ).toString()
+                    val error = Regex("Error: (.*)").find(result)?.groupValues
+                    if (error != null) {
+                        throw Exception(error[0])
                     }
-
-                    androidDriver.terminateApp(app.name).shouldBe(true)
-
-                    val logEntries = driver.manage().logs().get("logcat")
-                    val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
-                    val times = logEntries.mapNotNull {
-                        val groups = regex.find(it.message)?.groupValues
-                        if (groups == null) {
-                            null
-                        } else {
-                            printf("$logAppPrefix logcat entry processed: %s", app.name, it.message)
-                            val seconds = if (groups[1].isEmpty()) 0 else groups[1].toLong()
-                            seconds * 1000 + groups[2].toLong()
-                        }
-                    }
-                    if (times.size == 1) {
-                        appTimes.add(times.first())
-                    } else {
-                        printf("Expected 1 startup time in logcat, matching Regex '%s', but found %d", regex.pattern, times.size)
-                    }
+                } catch (e: Exception) {
+                    // in case the app can't be launched or crashes on startup, print logcat output
+                    val logs = driver.manage().logs().get("logcat").all.joinToString("\n")
+                    printf("%s", logs)
+                    throw (e)
                 }
 
-                TestOptions.Platform.IOS -> {
-                    val iosDriver = (driver as IOSDriver)
-                    val countBefore = driver.events.commands.filter { it.name == "execute" }.count()
-                    iosDriver.activateApp(app.name)
-                    // Note: with Appium 9 we can no longer filter by actual command name, see https://github.com/appium/java-client/issues/2219
-                    val times = driver.events.commands
-                        .filter { it.name == "execute" }
-                        .map { it.endTimestamp - it.startTimestamp }
-
-
-                    if (times.size == countBefore + 1) {
-                        appTimes.add(times.last())
+                val logEntries = driver.manage().logs().get("logcat")
+                val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
+                val times = logEntries.mapNotNull {
+                    val groups = regex.find(it.message)?.groupValues
+                    if (groups == null) {
+                        null
                     } else {
-                        printf("Expected %d activateApp events, but found %d", countBefore + 1, times.size)
+                        printf("$logAppPrefix logcat entry processed: %s", app.name, it.message)
+                        val seconds = if (groups[1].isEmpty()) 0 else groups[1].toLong()
+                        seconds * 1000 + groups[2].toLong()
                     }
-
-                    iosDriver.terminateApp(app.name)
+                }
+                if (times.size == 1) {
+                    appTimes.add(times.first())
+                } else {
+                    printf(
+                        "Expected 1 startup time in logcat, matching Regex '%s', but found %d",
+                        regex.pattern,
+                        times.size
+                    )
                 }
             }
 
-            // sleep before the next test run
-            Thread.sleep(sleepTimeMs)
+            TestOptions.Platform.IOS -> {
+                val iosDriver = (driver as IOSDriver)
+                driver.terminateApp(app.name)
+                val countBefore = driver.events.commands.filter { it.name == "execute" }.count()
+                iosDriver.activateApp(app.name)
+                // Note: with Appium 9 we can no longer filter by actual command name, see https://github.com/appium/java-client/issues/2219
+                val times = driver.events.commands
+                    .filter { it.name == "execute" }
+                    .map { it.endTimestamp - it.startTimestamp }
+
+                if (times.size == countBefore + 1) {
+                    appTimes.add(times.last())
+                } else {
+                    printf("Expected %d activateApp events, but found %d", countBefore + 1, times.size)
+                }
+
+            }
         }
-        return appTimes
     }
 }

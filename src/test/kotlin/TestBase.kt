@@ -17,7 +17,7 @@ abstract class TestBase(
             return _driver as AppiumDriver
         }
 
-    protected fun resetDriver() {
+    protected fun closeDriver() {
         _driver?.quit()
         _driver = null
     }
@@ -37,7 +37,7 @@ abstract class TestBase(
         try {
             return cb(driver)
         } catch (e: Exception) {
-            resetDriver()
+            closeDriver()
             throw e
         }
     }
