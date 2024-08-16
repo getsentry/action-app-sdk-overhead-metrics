@@ -153,6 +153,10 @@ class StartupTimeTest : TestBase() {
                 measuredTimes.add(appTimes)
                 break
             }
+
+            if (measuredTimes.size != appIndex + 1) {
+                throw Exception("$logAppPrefix - all tries to collect startup times have failed")
+            }
         }
 
         return measuredTimes
