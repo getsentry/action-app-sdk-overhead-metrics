@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0
+
+### Features
+
+* Automatically reconnect the appium client in case of startup time collection failure. ([#22](https://github.com/getsentry/action-app-sdk-overhead-metrics/pull/22))
+
 ## 1.7.0
 
 ### Features
