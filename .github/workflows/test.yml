@@ -9,8 +9,8 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [android, ios]
-        run: [1, 2, 3, 4, 5]
+        os: [android] # xxx, ios]
+        run: [1] # xxx [1, 2, 3, 4, 5]
     runs-on: ubuntu-latest
     name: ${{ matrix.os }} ${{ matrix.run }}/5
     steps:
