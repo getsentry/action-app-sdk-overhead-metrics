@@ -192,6 +192,20 @@ class StartupTimeTest : TestBase() {
         return appTimes
     }
 
+    private fun AndroidDriver.waitForActivity(
+        desiredActivity: String,
+        sleepMs: Long = sleepTimeMs,
+        maxWaitLoops: Int = 50
+    ) {
+        printf("Waiting for activity: %s", desiredActivity)
+        var counter = 0
+        while (currentActivity()?.contains(desiredActivity) == false && counter <= maxWaitLoops) {
+            Thread.sleep(sleepMs)
+            counter++
+        }
+        printf("Current activity: %s", currentActivity())
+    }
+
     private fun collectAppStartupTime(
         driver: AppiumDriver,
         app: AppInfo,
@@ -212,6 +226,9 @@ class StartupTimeTest : TestBase() {
                     if (error != null) {
                         throw Exception(error[0])
                     }
+                    app.measureActivity?.let {
+                        androidDriver.waitForActivity(it)
+                    }
                 } catch (e: Exception) {
                     // in case the app can't be launched or crashes on startup, print logcat output
                     val logs = driver.manage().logs().get("logcat").all.joinToString("\n")
@@ -220,7 +237,8 @@ class StartupTimeTest : TestBase() {
                 }
 
                 val logEntries = driver.manage().logs().get("logcat")
-                val regex = Regex("Displayed ${app.name}/\\.${app.activity}: \\+(?:([0-9]+)s)?([0-9]+)ms")
+                val trackedActivity = app.measureActivity ?: app.activity
+                val regex = Regex("Displayed ${app.name}/\\.$trackedActivity: \\+(?:([0-9]+)s)?([0-9]+)ms")
                 val times = logEntries.mapNotNull {
                     val groups = regex.find(it.message)?.groupValues
                     if (groups == null) {
