@@ -15,7 +15,12 @@ import java.util.logging.Logger
 import kotlin.io.path.createDirectories
 import kotlin.io.path.notExists
 
-data class AppInfo(val name: String, val activity: String? = null, val path: String) {
+data class AppInfo(
+    val name: String,
+    val activity: String? = null,
+    val path: String,
+    val measureActivity: String? = null
+) {
     private val pathIsUrl = path.contains(':')
 
     val file: Path by lazy {
