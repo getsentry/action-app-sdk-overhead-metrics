@@ -6,7 +6,6 @@ import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
-import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
 import kotlin.math.abs
