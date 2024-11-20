@@ -8,6 +8,9 @@ import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.doubles.shouldBeLessThan
 import org.junit.jupiter.api.Assumptions
 import org.junit.jupiter.api.Test
+import org.openqa.selenium.WebDriver
+import org.openqa.selenium.support.ui.FluentWait
+import java.time.Duration
 import kotlin.math.abs
 import kotlin.math.ceil
 
@@ -194,14 +197,13 @@ class StartupTimeTest : TestBase() {
     private fun AndroidDriver.waitForActivity(
         desiredActivity: String,
         sleepMs: Long = sleepTimeMs,
-        maxWaitLoops: Int = 50
+        timeOutMs: Long = 10_000,
     ) {
         printf("Waiting for activity: %s", desiredActivity)
-        var counter = 0
-        while (currentActivity()?.contains(desiredActivity) == false && counter <= maxWaitLoops) {
-            Thread.sleep(sleepMs)
-            counter++
-        }
+        val wait = FluentWait<WebDriver>(this)
+            .withTimeout(Duration.ofMillis(timeOutMs))
+            .pollingEvery(Duration.ofMillis(sleepMs))
+        wait.until { currentActivity()?.contains(desiredActivity) }
         printf("Current activity: %s", currentActivity())
     }
 
