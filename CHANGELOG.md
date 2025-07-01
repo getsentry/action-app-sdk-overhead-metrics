@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+* Set appium version to stable (#24)
+
 ## 1.8.0
 
 ### Features
