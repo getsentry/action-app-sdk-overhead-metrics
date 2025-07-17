@@ -125,7 +125,7 @@ data class TestOptions(
                 val env = System.getenv()
                 val sauceOptions = MutableCapabilities()
                 // Appium v2 required for Android logcat access.
-                sauceOptions.setCapability("appiumVersion", "stable")
+                sauceOptions.setCapability("appiumVersion", "appium2-20250501")
                 sauceOptions.setCapability("name", "Performance tests")
                 sauceOptions.setCapability(
                     "build",
