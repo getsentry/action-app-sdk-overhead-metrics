@@ -166,9 +166,9 @@ data class TestOptions(
                 caps.setCapability("appium:automationName", "XCUITest")
 
                 if (server == Server.SauceLabs) {
-                    // iPhone 12 Pro & iPhone 12 Pro Max | hexa core | 1900 MHz
-                    caps.setCapability("appium:deviceName", "iPhone 12 Pro.*")
-                    caps.setCapability("appium:platformVersion", "14.8")
+                    // iPhone 13 Pro & iPhone 13 Pro Max | hexa core | 3200 MHz
+                    caps.setCapability("appium:deviceName", "iPhone 13 Pro.*")
+                    caps.setCapability("appium:platformVersion", "16.7")
                 } else {
                     // Locally, we use any simulator, because real-device setup is a pain:
                     // https://appium.io/docs/en/drivers/ios-xcuitest-real-devices/
