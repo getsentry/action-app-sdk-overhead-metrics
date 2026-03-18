@@ -177,3 +177,8 @@ fabric.properties
 
 # macOS specific
 .DS_Store
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
