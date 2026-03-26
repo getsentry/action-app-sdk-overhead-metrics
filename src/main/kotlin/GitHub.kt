@@ -71,8 +71,11 @@ class GitHub {
             }
             println("Trying to download previous artifact '$artifactName' for branch '$branch'")
 
-            val run = workflow!!.listRuns()
-                .firstOrNull { it.headBranch == branch && it.conclusion == GHWorkflowRun.Conclusion.SUCCESS }
+            val run = repo!!.queryWorkflowRuns()
+                .branch(branch)
+                .conclusion(GHWorkflowRun.Conclusion.SUCCESS)
+                .list()
+                .firstOrNull { it.workflowId == workflow!!.id }
             if (run == null) {
                 println("Couldn't find any successful run workflow ${workflow!!.name}")
                 return
